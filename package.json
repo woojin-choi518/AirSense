@@ -3,10 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "build": "prisma generate && next build",
+    "vercel-build": "prisma generate && next build",
     "dev": "next dev",
-    "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "next lint",
+    "db:sync": "npx prisma db push && npx prisma generate",
+    "db:migrate": "npx prisma migrate dev && npx prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",
