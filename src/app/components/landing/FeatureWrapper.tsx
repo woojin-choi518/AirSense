@@ -29,7 +29,7 @@ export default function FeatureWrapper() {
 
       {/* Feature 전용 다크모드 영역 */}
       <div className={featureDark ? 'dark' : ''}>
-        <section className={`py-32 ${featureDark ? 'bg-[#360901]' : 'bg-white'}`}>
+        <section className={` ${featureDark ? 'bg-[#360901]' : 'bg-white'}`}>
           <FeatureSection {...featureData} isDark={featureDark} />
         </section>
 

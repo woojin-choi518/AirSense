@@ -1,0 +1,21 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model LivestockFarm {
+  id               Int     @id @default(autoincrement())
+  farmName         String  @map("farm_name")
+  livestockType    String  @map("livestock_type")
+  landAddress      String  @map("land_address")
+  roadAddress      String?  @map("road_address")
+  livestockCount   Int     @map("livestock_count")
+  barnCount        Int     @map("barn_count")
+  areaSqm          Float   @map("area_sqm")
+  latitude         Float?
+  longitude        Float?
+}
