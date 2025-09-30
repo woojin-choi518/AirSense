@@ -20,8 +20,9 @@ import LivestockPieChartPanel from '@/app/components/asan/LivestockPieChartPanel
 import WeatherPanel from '@/app/components/asan/WeatherPanel';
 import SectorOverlay from '@/app/components/asan/SectorOverlay';
 import CircleOverlay from '@/app/components/asan/CircleOverlay';
+import useScrollLock from '@/app/hooks/useScrollLock';
 
-const containerStyle = { width: '100%', height: '100vh' };
+const containerStyle = { width: '100vw', height: '100dvh' };
 const ASAN_CENTER = { lat: 36.7855, lng: 127.102 };
 const DEFAULT_ZOOM = 13;
 
@@ -78,6 +79,9 @@ export default function FarmMapPage() {
     () => Array.from(new Set(farms.map(f => f.livestock_type))),
     [farms]
   );
+
+  //hooks
+  useScrollLock(true);
 
   // 날씨 상태
   const [windDir, setWindDir] = useState(0);
@@ -273,9 +277,13 @@ export default function FarmMapPage() {
   if (!isLoaded) return <div className="flex items-center justify-center h-screen">지도 로딩 중…</div>;
 
   return (
-    <div className="relative h-screen">
+    <div className="
+      relative min-h-0 w-screen overflow-x-hidden
+      pt-[env(safe-area-inset-top)]
+      pb-[env(safe-area-inset-bottom)]
+    ">
       {/* 상단 좌측 필터 */}
-      <div className="fixed top-4 left-4 z-40">
+      <div className="fixed top-4 left-4 z-40 w-[90vw] sm:w-auto max-w-full">
         <LivestockCombinedFilterPanel
           livestockTypes={allTypes}
           selectedTypes={selectedTypes}
@@ -289,7 +297,7 @@ export default function FarmMapPage() {
       </div>
   
       {/* 상단 우측 날씨 */}
-      <div className="fixed top-4 right-4 z-40">
+      <div className="fixed top-4 right-4 z-40 w-[90vw] sm:w-auto max-w-full">
         <WeatherPanel 
           onForecastSelect={handleForecastSelect} 
           scWindSpeed={scWindSpeed}
@@ -300,103 +308,110 @@ export default function FarmMapPage() {
       </div>
   
       {/* 구글 맵 */}
-      <GoogleMap
-        mapContainerStyle={containerStyle}
-        center={ASAN_CENTER}
-        zoom={DEFAULT_ZOOM}
-        options={{ disableDefaultUI: true, zoomControl: true }}
-        onLoad={m => setMap(m)}
-      >
-        {visibleFarms.map(farm => (
-          <Marker
-            key={farm.id}
-            position={{ lat: farm.lat, lng: farm.lng }}
-            icon={{
-              url: iconMap[farm.livestock_type] || '/images/default.png',
-              scaledSize: new window.google.maps.Size(
-                farm.id === selectedId
-                  ? (isMobile ? MARKER_SIZE.mobile.selected : MARKER_SIZE.desktop.selected)
-                  : (isMobile ? MARKER_SIZE.mobile.default : MARKER_SIZE.desktop.default),
-                farm.id === selectedId
-                  ? (isMobile ? MARKER_SIZE.mobile.selected : MARKER_SIZE.desktop.selected)
-                  : (isMobile ? MARKER_SIZE.mobile.default : MARKER_SIZE.desktop.default)
-              ),
-              anchor: new window.google.maps.Point(
-                ((isMobile ? MARKER_SIZE.mobile.default : MARKER_SIZE.desktop.default) / 2),
-                (isMobile ? MARKER_SIZE.mobile.default : MARKER_SIZE.desktop.default)
-              ),
-            }}
-            onClick={() => setSelectedId(farm.id)}
-            title={farm.farm_name}
-            zIndex={1}
-          />
-        ))}
-  
-        {showOdor && map && odorFans.map(f => {
-          let cat = '기타';
-          if (['한우','육우','젖소'].includes(f.type)) cat = '소';
-          else if (f.type === '돼지') cat = '돼지';
-          else if (['종계/산란계','육계'].includes(f.type)) cat = '닭';
-          else if (f.type === '사슴') cat = '사슴';
-          const { stroke } = odorColorMap[cat];
-          return (
-            <React.Fragment key={f.farmId}>
-              <CircleOverlay
-                map={map}
-                center={f.center}
-                radius={f.radius * 0.6}
-                color={stroke}
-              />
-              <SectorOverlay
-                map={map}
-                center={f.center}
-                radius={f.radius * 0.8}
-                startAngle={f.startA}
-                endAngle={f.endA}
-                color={stroke}
-              />
-            </React.Fragment>
-          );
-        })}
-  
-        {selectedFarm && (
-          <InfoWindow
-            position={{ lat: selectedFarm.lat, lng: selectedFarm.lng }}
-            onCloseClick={() => setSelectedId(null)}
-            options={{ pixelOffset: new window.google.maps.Size(0,-30) }}
-          >
-            <div className="bg-white/80 backdrop-blur-md border-2 border-green-300 rounded-xl p-4
-            w-full
-            max-w-[90vw]
-            sm:max-w-[20rem]
-            text-gray-800 space-y-3 text-sm
-            break-words
-            ">
-              <h3 className="text-lg font-bold text-green-700">{selectedFarm.farm_name}</h3>
-              <div className="flex items-center gap-2">
-                <span className="font-medium text-green-600 bg-green-100 px-4 py-2 rounded-full min-w-[5rem] text-center">축종</span>
-                <span>{selectedFarm.livestock_type}</span>
+      <div className="fixed inset-0">
+        <GoogleMap
+          mapContainerStyle={containerStyle}
+          center={ASAN_CENTER}
+          zoom={DEFAULT_ZOOM}
+          options={{ 
+            disableDefaultUI: true,
+            zoomControl: true,
+            gestureHandling: 'greedy',
+            scrollwheel: true,
+          }}
+          onLoad={m => setMap(m)}
+        >
+          {visibleFarms.map(farm => (
+            <Marker
+              key={farm.id}
+              position={{ lat: farm.lat, lng: farm.lng }}
+              icon={{
+                url: iconMap[farm.livestock_type] || '/images/default.png',
+                scaledSize: new window.google.maps.Size(
+                  farm.id === selectedId
+                    ? (isMobile ? MARKER_SIZE.mobile.selected : MARKER_SIZE.desktop.selected)
+                    : (isMobile ? MARKER_SIZE.mobile.default : MARKER_SIZE.desktop.default),
+                  farm.id === selectedId
+                    ? (isMobile ? MARKER_SIZE.mobile.selected : MARKER_SIZE.desktop.selected)
+                    : (isMobile ? MARKER_SIZE.mobile.default : MARKER_SIZE.desktop.default)
+                ),
+                anchor: new window.google.maps.Point(
+                  ((isMobile ? MARKER_SIZE.mobile.default : MARKER_SIZE.desktop.default) / 2),
+                  (isMobile ? MARKER_SIZE.mobile.default : MARKER_SIZE.desktop.default)
+                ),
+              }}
+              onClick={() => setSelectedId(farm.id)}
+              title={farm.farm_name}
+              zIndex={1}
+            />
+          ))}
+    
+          {showOdor && map && odorFans.map(f => {
+            let cat = '기타';
+            if (['한우','육우','젖소'].includes(f.type)) cat = '소';
+            else if (f.type === '돼지') cat = '돼지';
+            else if (['종계/산란계','육계'].includes(f.type)) cat = '닭';
+            else if (f.type === '사슴') cat = '사슴';
+            const { stroke } = odorColorMap[cat];
+            return (
+              <React.Fragment key={f.farmId}>
+                <CircleOverlay
+                  map={map}
+                  center={f.center}
+                  radius={f.radius * 0.6}
+                  color={stroke}
+                />
+                <SectorOverlay
+                  map={map}
+                  center={f.center}
+                  radius={f.radius * 0.8}
+                  startAngle={f.startA}
+                  endAngle={f.endA}
+                  color={stroke}
+                />
+              </React.Fragment>
+            );
+          })}
+    
+          {selectedFarm && (
+            <InfoWindow
+              position={{ lat: selectedFarm.lat, lng: selectedFarm.lng }}
+              onCloseClick={() => setSelectedId(null)}
+              options={{ pixelOffset: new window.google.maps.Size(0,-30) }}
+            >
+              <div className="bg-white/80 backdrop-blur-md border-2 border-green-300 rounded-xl p-4
+              w-full
+              max-w-[90vw]
+              sm:max-w-[20rem]
+              text-gray-800 space-y-3 text-sm
+              break-words
+              ">
+                <h3 className="text-lg font-bold text-green-700">{selectedFarm.farm_name}</h3>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-green-600 bg-green-100 px-4 py-2 rounded-full min-w-[5rem] text-center">축종</span>
+                  <span>{selectedFarm.livestock_type}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-green-600 bg-green-100 px-4 py-2 rounded-full min-w-[5rem] text-center">사육두수</span>
+                  <span>{selectedFarm.livestock_count.toLocaleString()}두</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-green-600 bg-green-100 px-4 py-2 rounded-full min-w-[5rem] text-center">면적</span>
+                  <span>{selectedFarm.area_sqm.toLocaleString()}㎡</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-green-600 bg-green-100 px-4 py-2 rounded-full min-w-[5rem] text-center">도로명</span>
+                  <span>{selectedFarm.road_address || '없음'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-green-600 bg-green-100 px-4 py-2 rounded-full min-w-[5rem] text-center">지번</span>
+                  <span>{selectedFarm.land_address || '없음'}</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="font-medium text-green-600 bg-green-100 px-4 py-2 rounded-full min-w-[5rem] text-center">사육두수</span>
-                <span>{selectedFarm.livestock_count.toLocaleString()}두</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="font-medium text-green-600 bg-green-100 px-4 py-2 rounded-full min-w-[5rem] text-center">면적</span>
-                <span>{selectedFarm.area_sqm.toLocaleString()}㎡</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="font-medium text-green-600 bg-green-100 px-4 py-2 rounded-full min-w-[5rem] text-center">도로명</span>
-                <span>{selectedFarm.road_address || '없음'}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="font-medium text-green-600 bg-green-100 px-4 py-2 rounded-full min-w-[5rem] text-center">지번</span>
-                <span>{selectedFarm.land_address || '없음'}</span>
-              </div>
-            </div>
-          </InfoWindow>
-        )}
-      </GoogleMap>
+            </InfoWindow>
+          )}
+        </GoogleMap>
+      </div>
   
       {/* 하단 공통 컨테이너: Pie 차트 */}
       <div
@@ -404,6 +419,7 @@ export default function FarmMapPage() {
           fixed bottom-4 left-4 right-4 z-50
           flex flex-col space-y-3
           sm:flex-row sm:space-y-0 sm:justify-between sm:space-x-4
+          max-w-[95vw] mx-auto
         "
       >
         {/* Pie 차트 패널 */}
