@@ -107,7 +107,7 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
   );
 
   return (
-    <div className="fixed top-[70px] right-4 z-40">
+    <div className="fixed top-[70px] right-4 z-40 max-w-[85vw]">
       <div
         onClick={() => setIsOpen(o => !o)}
         className="bg-gradient-to-r from-teal-800/20 to-blue-500/20 backdrop-blur-md border-2 border-teal-300 rounded-full px-5 py-2 flex items-center justify-between cursor-pointer select-none shadow-md transition"
@@ -117,7 +117,7 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
       </div>
 
       {isOpen && (
-        <div className="mt-2 bg-gradient-to-br from-teal-800/20 to-blue-500/20 backdrop-blur-md border-2 border-teal-300 rounded-2xl shadow-lg p-4 w-[200px] max-h-[80vh] overflow-y-auto transition-all">
+        <div className="mt-2 bg-gradient-to-br from-teal-800/20 to-blue-500/20 backdrop-blur-md border-2 border-teal-300 rounded-2xl shadow-lg p-4 w-[min(160px,85vw)] max-h-[80vh] overflow-y-auto transition-all">
           {/* 슬라이더 */}
           {forecastList.length > 0 && (
             <>
@@ -149,7 +149,7 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
           {selIndex === 0 ? (
             <>
               <div className="text-center text-white text-xs mb-2">
-                마지막 업데이트: {lastUpdated}
+                업데이트: {lastUpdated}
               </div>
               <div className="space-y-2 mb-4">
                 <div className="bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 rounded-full text-white text-sm text-center">
