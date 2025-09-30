@@ -423,24 +423,16 @@ export default function FarmMapPage() {
       </div>
   
       {/* 하단 공통 컨테이너: Pie 차트 */}
-      <div
-        className="
-          fixed bottom-4 left-4 right-4 z-50
-          flex flex-col space-y-3
-          sm:flex-row sm:space-y-0 sm:justify-between sm:space-x-4
-          max-w-[95vw] mx-auto
-        "
-      >
         {/* Pie 차트 패널 */}
-        <TogglePanel title="날씨 정보"
+        <TogglePanel title="축종별 농가 통계"
           horizontal='left-4'
           bottomOffset={12}
-          widthClass="min-w-[320px] max-w-[24vw] sm:max-w-[20vw]">
+          widthClass="min-w-[300px] max-w-[300px] sm:min-w-[400px] sm:max-w-[400px]">
           <LivestockPieChartPanel
             farms={farms}
           />
         </TogglePanel>
-      </div>
+
     </div>
   );  
 }

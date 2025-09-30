@@ -39,7 +39,7 @@ export default function LivestockPieChart({
   const groupedData = groupSmallCategories(data, 0.03); //기타 묶기 적용
 
   return (
-    <div className="w-full h-[200px] sm:h-[280px] px-2 font-pretendard">
+    <div className="w-full h-[180px] sm:h-[240px] px-2 font-pretendard">
       <ResponsiveContainer>
         <PieChart>
           <Pie
@@ -117,7 +117,7 @@ export default function LivestockPieChart({
             verticalAlign="bottom"
             align="center"
             wrapperStyle={{
-              fontSize: '14px',
+              fontSize: '12px',
               fontWeight: 600,
               marginTop: 8,
               fontFamily: 'Pretendard', // 범례에도 Pretendard 적용
