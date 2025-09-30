@@ -39,7 +39,7 @@ export default function LivestockPieChart({
   const groupedData = groupSmallCategories(data, 0.03); //기타 묶기 적용
 
   return (
-    <div className="w-full h-[260px] sm:h-[280px] px-2 font-pretendard">
+    <div className="w-full h-[200px] sm:h-[280px] px-2 font-pretendard">
       <ResponsiveContainer>
         <PieChart>
           <Pie
