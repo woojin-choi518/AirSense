@@ -21,7 +21,6 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
   const [current, setCurrent] = useState<any>(null);
   const [forecastList, setForecastList] = useState<any[]>([]);
   const [lastUpdated, setLastUpdated] = useState<string>('');
-  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,7 +48,7 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
     fetchForecast();
   }, []);
 
-  // 실시간 모드: selIndex===0일 때만 current 갱신
+  // 실시간 모드
   useEffect(() => {
     let iv: NodeJS.Timeout;
     const fetchCurrent = async () => {
@@ -107,104 +106,102 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
   );
 
   return (
-    <div className="fixed top-[70px] right-4 z-40 max-w-[85vw]">
-      <div
-        onClick={() => setIsOpen(o => !o)}
-        className="bg-gradient-to-r from-teal-800/20 to-blue-500/20 backdrop-blur-md border-2 border-teal-300 rounded-full px-5 py-2 flex items-center justify-between cursor-pointer select-none shadow-md transition"
-      >
-        <span className="text-white font-bold">날씨 정보</span>
-        <span className="text-white text-lg">{isOpen ? '▾' : '▸'}</span>
-      </div>
-
-      {isOpen && (
-        <div className="mt-2 bg-gradient-to-br from-teal-800/20 to-blue-500/20 backdrop-blur-md border-2 border-teal-300 rounded-2xl shadow-lg p-4 w-[min(160px,85vw)] max-h-[80vh] overflow-y-auto transition-all">
-          {/* 슬라이더 */}
-          {forecastList.length > 0 && (
-            <>
-              <input
-                type="range"
-                min={0}
-                max={forecastList.length - 1}
-                step={1}
-                value={selIndex}
-                onChange={e => onSelIndexChange(+e.target.value)}
-                className="w-full accent-teal-400"
-              />
-              <div className="mt-2 grid grid-cols-5 text-white text-xs text-center">
-                {tickLabels.map((label, idx) => (
-                  <span key={idx}>{label}</span>
-                ))}
-              </div>
-              <div className="text-white text-sm text-center mt-1">
-                {selIndex === 0
-                  ? '실시간'
-                  : `${selIndex * 3}시간 후 (${tickLabels[Math.floor(
-                      selIndex / tickStep
-                    )]})`}
-              </div>
-            </>
-          )}
-
-          {/* 데이터 블록 */}
-          {selIndex === 0 ? (
-            <>
-              <div className="text-center text-white text-xs mb-2">
-                업데이트: {lastUpdated}
-              </div>
-              <div className="space-y-2 mb-4">
-                <div className="bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 rounded-full text-white text-sm text-center">
-                  온도: {T}°C      
-                </div>
-                <div className="bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 rounded-full text-white text-sm text-center">
-                  습도: {H}%
-                </div>
-                <div className="bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 rounded-full text-white text-sm flex items-center justify-center">
-                  풍향:
-                  <svg className="w-4 h-4 mx-1" style={{ transform: `rotate(${Wdir}deg)` }} fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2l8 10h-6v8h-4v-8H4l8-10z" />
-                  </svg>
-                  ({Wdir}°)
-                </div>
-                <div className="bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 rounded-full text-white text-sm text-center">
-                  풍속: {Wsp} m/s
-                </div>
-                <div className="bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 rounded-full text-white text-sm text-center">
-                  강수량: {rain} mm
-                </div>
-              </div>
-            </>
-          ) : (
-            selFc && (
-              <div className="space-y-2 mb-4">
-                <div className="bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 rounded-full text-white text-sm text-center">
-                  {new Date(selFc.dt * 1000).toLocaleString('ko-KR')}
-                </div>
-                <div className="bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 rounded-full text-white text-sm text-center">
-                  온도: {selFc.main.temp}°C
-                </div>
-                <div className="bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 rounded-full text-white text-sm text-center">
-                  습도: {selFc.main.humidity}%
-                </div>
-                <div className="bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 rounded-full text-white text-sm flex items-center justify-center">
-                  풍향:
-                  <svg className="w-4 h-4 mx-1" style={{ transform: `rotate(${selFc.wind.deg}deg)` }} fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2l8 10h-6v8h-4v-8H4l8-10z" />
-                  </svg>
-                  ({selFc.wind.deg}°)
-                </div>
-                <div className="bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 rounded-full text-white text-sm text-center">
-                  풍속: {selFc.wind.speed} m/s
-                </div>
-              </div>
-            )
-          )}
-
-          {/* 안내 문구 */}
-          <div className="text-red-400 text-center text-sm font-bold p-2 border-2 border-red-400 rounded-lg">
-            {guidance}
+    <div className="w-full max-h-[80vh] overflow-y-auto p-2">
+      {/* 슬라이더 */}
+      {forecastList.length > 0 && (
+        <div className="p-1 space-y-1">
+          <div className="text-white text-sm text-center">
+            {selIndex === 0
+              ? '실시간'
+              : `${selIndex * 3}시간 후 (${tickLabels[Math.floor(
+                  selIndex / tickStep
+                )]})`}
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={forecastList.length - 1}
+            step={1}
+            value={selIndex}
+            onChange={e => onSelIndexChange(+e.target.value)}
+            className="w-full accent-teal-400"
+          />
+          <div className="mt-2 grid grid-cols-5 text-white text-xs text-center">
+            {tickLabels.map((label, idx) => (
+              <span key={idx}>{label}</span>
+            ))}
           </div>
         </div>
       )}
+
+      {/* 데이터 블록 */}
+      {selIndex === 0 ? (
+        <div className="space-y-2 mb-4">
+          <div className="bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 rounded-full text-white text-sm text-center">
+            {lastUpdated}
+          </div>
+          <div className="space-y-2 mb-4">
+            <div className="bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 rounded-full text-white text-sm text-center">
+              온도: {T}°C
+            </div>
+            <div className="bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 rounded-full text-white text-sm text-center">
+              습도: {H}%
+            </div>
+            <div className="bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 rounded-full text-white text-sm flex items-center justify-center">
+              풍향:
+              <svg
+                className="w-4 h-4 mx-1"
+                style={{ transform: `rotate(${Wdir}deg)` }}
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path d="M12 2l8 10h-6v8h-4v-8H4l8-10z" />
+              </svg>
+              ({Wdir}°)
+            </div>
+            <div className="bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 rounded-full text-white text-sm text-center">
+              풍속: {Wsp} m/s
+            </div>
+            <div className="bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 rounded-full text-white text-sm text-center">
+              강수량: {rain} mm
+            </div>
+          </div>
+        </div>
+      ) : (
+        selFc && (
+          <div className="space-y-2 mb-4">
+            <div className="bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 rounded-full text-white text-sm text-center">
+              {new Date(selFc.dt * 1000).toLocaleString('ko-KR')}
+            </div>
+            <div className="bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 rounded-full text-white text-sm text-center">
+              온도: {selFc.main.temp}°C
+            </div>
+            <div className="bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 rounded-full text-white text-sm text-center">
+              습도: {selFc.main.humidity}%
+            </div>
+            <div className="bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 rounded-full text-white text-sm flex items-center justify-center">
+              풍향:
+              <svg
+                className="w-4 h-4 mx-1"
+                style={{ transform: `rotate(${selFc.wind.deg}deg)` }}
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path d="M12 2l8 10h-6v8h-4v-8H4l8-10z" />
+              </svg>
+              ({selFc.wind.deg}°)
+            </div>
+            <div className="bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 rounded-full text-white text-sm text-center">
+              풍속: {selFc.wind.speed} m/s
+            </div>
+          </div>
+        )
+      )}
+
+      {/* 안내 문구 */}
+      <div className="text-rose-600 text-center text-sm font-bold p-2 border-2 border-rose-600 rounded-lg bg-sky-50">
+        {guidance}
+      </div>
     </div>
   );
 };

@@ -21,6 +21,7 @@ import WeatherPanel from '@/app/components/asan/WeatherPanel';
 import SectorOverlay from '@/app/components/asan/SectorOverlay';
 import CircleOverlay from '@/app/components/asan/CircleOverlay';
 import useScrollLock from '@/app/hooks/useScrollLock';
+import TogglePanel from '@/app/components/common/TogglePanel';
 
 const containerStyle = { width: '100vw', height: '100dvh' };
 const ASAN_CENTER = { lat: 36.7855, lng: 127.102 };
@@ -283,7 +284,11 @@ export default function FarmMapPage() {
       pb-[env(safe-area-inset-bottom)]
     ">
       {/* 상단 좌측 필터 */}
-      <div className="fixed top-4 left-4 z-40 w-[90vw] sm:w-auto max-w-full">
+      <TogglePanel 
+        title="축종 및 규모 필터"
+        horizontal='left-4'
+        topOffset={64}
+        widthClass="min-w-[200px] max-w-[24vw] sm:max-w-[20vw]">
         <LivestockCombinedFilterPanel
           livestockTypes={allTypes}
           selectedTypes={selectedTypes}
@@ -294,10 +299,14 @@ export default function FarmMapPage() {
           showOdor={showOdor}
           onToggleOdor={() => setShowOdor(v => !v)}
         />
-      </div>
+      </TogglePanel>
   
       {/* 상단 우측 날씨 */}
-      <div className="fixed top-4 right-4 z-40 w-[90vw] sm:w-auto max-w-full">
+      <TogglePanel 
+        title="날씨 정보"
+        horizontal='right-4'
+        topOffset={64} 
+        widthClass="min-w-[160px] max-w-[24vw] sm:max-w-[20vw]">
         <WeatherPanel 
           onForecastSelect={handleForecastSelect} 
           scWindSpeed={scWindSpeed}
@@ -305,7 +314,7 @@ export default function FarmMapPage() {
           onSelIndexChange={setSelFcIndex}
           selIndex={selFcIndex} 
         />
-      </div>
+      </TogglePanel>
   
       {/* 구글 맵 */}
       <div className="fixed inset-0">
@@ -423,13 +432,14 @@ export default function FarmMapPage() {
         "
       >
         {/* Pie 차트 패널 */}
-        <div className="w-full sm:w-auto">
+        <TogglePanel title="날씨 정보"
+          horizontal='left-4'
+          bottomOffset={12}
+          widthClass="min-w-[320px] max-w-[24vw] sm:max-w-[20vw]">
           <LivestockPieChartPanel
             farms={farms}
-            isOpen={isChartOpen}
-            onToggle={toggleChart}
           />
-        </div>
+        </TogglePanel>
       </div>
     </div>
   );  
