@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import * as Slider from '@radix-ui/react-slider';
 import { scaleRanges } from '@/app/lib/livestockScaleRanges';
 
@@ -10,10 +10,7 @@ interface Props {
   onToggleType: (type: string) => void;
   onToggleAllTypes: () => void;
   allTypesSelected: boolean;
-  onScaleChange: (
-    group: string,
-    range: { min: number; max: number | null }
-  ) => void;
+  onScaleChange: (group: string, range: { min: number; max: number | null }) => void;
   showOdor: boolean;
   onToggleOdor: () => void;
 }
@@ -28,57 +25,56 @@ export default function LivestockCombinedFilterPanel({
   showOdor,
   onToggleOdor,
 }: Props) {
-  const groups = Object.keys(scaleRanges);
-  const [activeGroup, setActiveGroup] = useState(groups[0] || '');
-  const [rangeMap, setRangeMap] = useState<Record<string, [number, number]>>(
-    () =>
-      groups.reduce((acc, g) => {
-        const len = scaleRanges[g].length;
-        acc[g] = [0, len - 1];
-        return acc;
-      }, {} as Record<string, [number, number]>)
-  );
+  // 그룹 목록
+  const groups = useMemo(() => Object.keys(scaleRanges), []);
 
-  // mount 시 초기 onScaleChange 호출
-  useEffect(() => {
-    groups.forEach((g) => {
-      const [minIdx, maxIdx] = rangeMap[g];
-      const rs = scaleRanges[g];
-      onScaleChange(g, { min: rs[minIdx].min, max: rs[maxIdx].max });
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleChange = (group: string, vals: [number, number]) => {
-    setRangeMap((prev) => {
-      const next = { ...prev, [group]: vals };
-      const rs = scaleRanges[group];
-      onScaleChange(group, {
-        min: rs[vals[0]].min,
-        max: rs[vals[1]].max,
-      });
-      return next;
-    });
-  };
-
-  // 전체 슬라이더 초기화
-  const resetAll = () => {
-    const initialMap = groups.reduce((acc, g) => {
+  // 초기 rangeMap 생성
+  const initialRangeMap = useMemo(() => {
+    return groups.reduce((acc, g) => {
       const len = scaleRanges[g].length;
-      acc[g] = [0, len - 1];
+      acc[g] = [0, len - 1] as [number, number];
       return acc;
     }, {} as Record<string, [number, number]>);
-    setRangeMap(initialMap);
-    groups.forEach((g) => {
-      const [minIdx, maxIdx] = initialMap[g];
-      const rs = scaleRanges[g];
-      onScaleChange(g, { min: rs[minIdx].min, max: rs[maxIdx].max });
-    });
-  };
+  }, [groups]);
 
+  const [activeGroup, setActiveGroup] = useState(groups[0] || '');
+  const [rangeMap, setRangeMap] = useState<Record<string, [number, number]>>(initialRangeMap);
+
+  // ✅ onScaleChange는 렌더 중이 아니라 커밋 이후에만 호출
+  // 이전 rangeMap을 기억해 변경된 그룹만 통지
+  const prevRangeRef = useRef<Record<string, [number, number]>>({});
+  useEffect(() => {
+    const prev = prevRangeRef.current;
+    groups.forEach((g) => {
+      const prevVal = prev[g];
+      const currVal = rangeMap[g];
+      const changed =
+        !prevVal ||
+        prevVal[0] !== currVal[0] ||
+        prevVal[1] !== currVal[1];
+
+      if (changed) {
+        const rs = scaleRanges[g];
+        const [minIdx, maxIdx] = currVal;
+        onScaleChange(g, { min: rs[minIdx].min, max: rs[maxIdx].max });
+      }
+    });
+    prevRangeRef.current = rangeMap;
+  }, [rangeMap, groups, onScaleChange]);
+
+  // 슬라이더 변경 → 로컬 상태만 갱신 (부모 통지는 위 useEffect가 담당)
+  const handleChange = useCallback((group: string, vals: [number, number]) => {
+    setRangeMap((prev) => ({ ...prev, [group]: vals }));
+  }, []);
+
+  // 전체 초기화 → 로컬 상태만 갱신 (부모 통지는 위 useEffect가 담당)
+  const resetAll = useCallback(() => {
+    setRangeMap(initialRangeMap);
+  }, [initialRangeMap]);
+
+  // 현재 탭 그룹의 데이터
   const currentRange =
-    rangeMap[activeGroup] ||
-    [0, scaleRanges[activeGroup]?.length - 1 || 0];
+    rangeMap[activeGroup] || [0, Math.max(0, (scaleRanges[activeGroup]?.length ?? 1) - 1)];
   const rs = scaleRanges[activeGroup] || [];
 
   return (
@@ -124,6 +120,7 @@ export default function LivestockCombinedFilterPanel({
             초기화
           </button>
         </div>
+
         {/* 그룹 선택 탭 */}
         <div className="flex space-x-2 mb-2 overflow-x-auto pb-1">
           {groups.map((group) => (
@@ -140,6 +137,7 @@ export default function LivestockCombinedFilterPanel({
             </button>
           ))}
         </div>
+
         {/* 슬라이더 */}
         <div className="space-y-4">
           <Slider.Root
@@ -162,6 +160,7 @@ export default function LivestockCombinedFilterPanel({
               aria-label="Maximum value"
             />
           </Slider.Root>
+
           <div className="flex justify-between text-sm text-white font-semibold px-1">
             {rs.map((r) => (
               <span
@@ -175,7 +174,7 @@ export default function LivestockCombinedFilterPanel({
         </div>
       </div>
 
-      {/* 3) 악취 범위 토글 스위치 */}
+      {/* 3) 악취 범위 토글 */}
       <div className="pt-4 border-t border-white">
         <label className="flex items-center justify-between">
           <span className="text-white text-m font-bold font-sans">악취 범위</span>
