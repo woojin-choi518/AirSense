@@ -7,7 +7,7 @@ import { LivestockFarm } from '@/app/lib/types';
 // Recharts PieChart 동적 import
 const PieChart = dynamic(() => import('./LivestockPieChart'), {
   ssr: false,
-  loading: () => <div className="w-full h-64 bg-gray-200 animate-pulse" />
+  loading: () => <div className="w-full h-20 animate-pulse" />
 });
 
 interface Props {
