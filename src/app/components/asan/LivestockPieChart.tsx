@@ -1,45 +1,27 @@
-'use client';
+'use client'
 
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  PieLabelRenderProps,
-  ResponsiveContainer,
-  Legend,
-} from 'recharts';
-import { useEffect, useState } from 'react';
-import { groupSmallCategories } from '@/app/lib/groupSmallCategories';
+import { useEffect, useState } from 'react'
+import { Cell, Legend, Pie, PieChart, PieLabelRenderProps, ResponsiveContainer, Tooltip } from 'recharts'
 
-const COLORS = [
-  '#524632',
-  '#8f7e4f',
-  '#c3c49e',
-  '#d8ffdd',
-  '#a1a488',
-  '#565656',
-];
+import { groupSmallCategories } from '@/app/lib/groupSmallCategories'
 
-export default function LivestockPieChart({
-  data,
-}: {
-  data: { name: string; value: number }[];
-}) {
-  const [isMobile, setIsMobile] = useState(false);
+const COLORS = ['#524632', '#8f7e4f', '#c3c49e', '#d8ffdd', '#a1a488', '#565656']
+
+export default function LivestockPieChart({ data }: { data: { name: string; value: number }[] }) {
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setIsMobile(window.innerWidth < 480);
+      setIsMobile(window.innerWidth < 480)
     }
-  }, []);
+  }, [])
 
-  const outerRadius = isMobile ? 70 : 90;
+  const outerRadius = isMobile ? 70 : 90
 
-  const groupedData = groupSmallCategories(data, 0.03); //기타 묶기 적용
+  const groupedData = groupSmallCategories(data, 0.03) //기타 묶기 적용
 
   return (
-    <div className="w-full h-[180px] sm:h-[240px] px-2 font-pretendard">
+    <div className="font-pretendard h-[180px] w-full px-2 sm:h-[240px]">
       <ResponsiveContainer>
         <PieChart>
           <Pie
@@ -54,29 +36,21 @@ export default function LivestockPieChart({
             labelLine={false}
             label={(props: PieLabelRenderProps) => {
               type MyLabelProps = {
-                name: string | number;
-                percent?: number;
-                cx: number;
-                cy: number;
-                midAngle: number;
-                innerRadius: number;
-                outerRadius: number;
-              };
-          
-              const {
-                name,
-                percent,
-                cx,
-                cy,
-                midAngle,
-                innerRadius,
-                outerRadius,
-              }  = (props as unknown as MyLabelProps);
-              const RADIAN = Math.PI / 180;
-              const radius = innerRadius + (outerRadius - innerRadius) * 1.2;
-              const x = cx + radius * Math.cos(-midAngle * RADIAN);
-              const y = cy + radius * Math.sin(-midAngle * RADIAN);
-          
+                name: string | number
+                percent?: number
+                cx: number
+                cy: number
+                midAngle: number
+                innerRadius: number
+                outerRadius: number
+              }
+
+              const { name, percent, cx, cy, midAngle, innerRadius, outerRadius } = props as unknown as MyLabelProps
+              const RADIAN = Math.PI / 180
+              const radius = innerRadius + (outerRadius - innerRadius) * 1.2
+              const x = cx + radius * Math.cos(-midAngle * RADIAN)
+              const y = cy + radius * Math.sin(-midAngle * RADIAN)
+
               return (
                 <text
                   x={x}
@@ -90,17 +64,13 @@ export default function LivestockPieChart({
                 >
                   {`${String(name)} (${percent !== undefined ? (percent * 100).toFixed(1) : '0.0'}%)`}
                 </text>
-              );
+              )
             }}
             isAnimationActive
             animationDuration={800}
           >
             {groupedData.map((_, i) => (
-              <Cell
-                key={`cell-${i}`}
-                fill={COLORS[i % COLORS.length]}
-                style={{ transition: 'all 0.3s ease' }}
-              />
+              <Cell key={`cell-${i}`} fill={COLORS[i % COLORS.length]} style={{ transition: 'all 0.3s ease' }} />
             ))}
           </Pie>
           <Tooltip
@@ -126,5 +96,5 @@ export default function LivestockPieChart({
         </PieChart>
       </ResponsiveContainer>
     </div>
-  );
+  )
 }

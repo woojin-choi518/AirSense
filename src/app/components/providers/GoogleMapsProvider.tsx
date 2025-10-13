@@ -1,11 +1,11 @@
 // components/GoogleMapsProvider.tsx
-'use client';
+'use client'
 
-import React from 'react';
-import { LoadScriptNext } from '@react-google-maps/api';
+import { LoadScriptNext } from '@react-google-maps/api'
+import React from 'react'
 
 interface Props {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 export default function GoogleMapsProvider({ children }: Props) {
@@ -15,9 +15,7 @@ export default function GoogleMapsProvider({ children }: Props) {
       googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}
       libraries={['geometry']}
     >
-        <main>
-            {children}
-        </main>
+      <main>{children}</main>
     </LoadScriptNext>
-  );
+  )
 }
