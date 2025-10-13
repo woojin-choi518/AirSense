@@ -17,6 +17,7 @@ AirSense Asan은 아산시에 위치한 722개 농장과 날씨 데이터를 활
 ## 🛠️ 기술 스택
 
 ### Frontend
+
 - **Next.js 15.5.4** - React 기반 풀스택 프레임워크
 - **React 19.1.0** - 사용자 인터페이스 라이브러리
 - **TypeScript** - 타입 안전성을 위한 정적 타입 언어
@@ -32,12 +33,14 @@ AirSense Asan은 아산시에 위치한 722개 농장과 날씨 데이터를 활
 ### 설치 및 실행
 
 1. **저장소 클론**
+
    ```bash
    git clone <repository-url>
    cd airsense
    ```
 
 2. **의존성 설치**
+
    ```bash
    npm install
    # 또는
@@ -45,6 +48,7 @@ AirSense Asan은 아산시에 위치한 722개 농장과 날씨 데이터를 활
    ```
 
 3. **개발 서버 실행**
+
    ```bash
    npm run dev
    # 또는
