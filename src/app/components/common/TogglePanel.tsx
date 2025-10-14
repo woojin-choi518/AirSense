@@ -11,7 +11,7 @@ export default function TogglePanel({
   widthClass = 'min-w-[220px] max-w-[88vw] sm:min-w-[280px] sm:max-w-[24vw]',
   topOffset,
   bottomOffset,
-  z = 40,
+  z = 9999,
   defaultOpen = false,
 }: {
   title: string
