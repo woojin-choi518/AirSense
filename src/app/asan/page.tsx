@@ -23,6 +23,7 @@ export default function FarmMapPage() {
 
   // 상태
   const [farms, setFarms] = useState<LivestockFarm[]>([])
+  const [selectedFarmDetail, setSelectedFarmDetail] = useState<LivestockFarm | null>(null)
   const [selectedTypes, setSelectedTypes] = useState<string[]>(['한우', '돼지', '젖소', '육우'])
   const [selectedScales, setSelectedScales] = useState<Record<string, { min: number; max: number | null }>>({})
   const [selectedId, setSelectedId] = useState<number | null>(null)
@@ -115,8 +116,6 @@ export default function FarmMapPage() {
 
   const { scWindSpeed, scHumidity, scStability, scWindDir } = envApplied
 
-  const selectedFarm = farms.find((f) => f.id === selectedId) || null
-
   const visibleFarmsLite = useMemo(
     () =>
       visibleFarms.map((f) => ({
@@ -149,6 +148,28 @@ export default function FarmMapPage() {
       setFcWindDir(h.wind.deg)
     },
     []
+  )
+
+  // 農場詳細情報を取得
+  const fetchFarmDetail = useCallback(async (farmId: number) => {
+    try {
+      const response = await fetch(`/api/asan-farm/${farmId}`)
+      if (!response.ok) throw new Error(response.statusText)
+      const farmDetail: LivestockFarm = await response.json()
+      setSelectedFarmDetail(farmDetail)
+    } catch (error) {
+      console.error('農場詳細情報の取得に失敗:', error)
+      setSelectedFarmDetail(null)
+    }
+  }, [])
+
+  // 農場選択時の処理
+  const handleFarmSelect = useCallback(
+    (farmId: number) => {
+      setSelectedId(farmId)
+      fetchFarmDetail(farmId)
+    },
+    [fetchFarmDetail]
   )
 
   // 데이터 fetch
@@ -357,7 +378,7 @@ export default function FarmMapPage() {
               key={farm.id}
               position={{ lat: farm.lat, lng: farm.lng }}
               icon={{ url: iconMap[farm.livestock_type].src, ...markerIcon(farm.id === selectedId) }}
-              onClick={() => setSelectedId(farm.id)}
+              onClick={() => handleFarmSelect(farm.id)}
               title={farm.farm_name}
             />
           ))}
@@ -402,43 +423,46 @@ export default function FarmMapPage() {
               )
             })}
 
-          {selectedFarm && (
+          {selectedFarmDetail && (
             <InfoWindow
-              position={{ lat: selectedFarm.lat, lng: selectedFarm.lng }}
-              onCloseClick={() => setSelectedId(null)}
+              position={{ lat: selectedFarmDetail.lat, lng: selectedFarmDetail.lng }}
+              onCloseClick={() => {
+                setSelectedId(null)
+                setSelectedFarmDetail(null)
+              }}
               options={{ pixelOffset: new window.google.maps.Size(0, -30) }}
             >
               <div className="w-full max-w-[90vw] space-y-3 rounded-xl border-2 border-green-300 bg-white/80 p-4 text-sm break-words text-gray-800 backdrop-blur-md sm:max-w-[20rem]">
-                <h3 className="text-lg font-bold text-green-700">{selectedFarm.farm_name}</h3>
+                <h3 className="text-lg font-bold text-green-700">{selectedFarmDetail.farm_name}</h3>
                 <div className="flex items-center gap-2">
                   <span className="min-w-[5rem] rounded-full bg-green-100 px-4 py-2 text-center font-medium text-green-600">
                     축종
                   </span>
-                  <span>{selectedFarm.livestock_type}</span>
+                  <span>{selectedFarmDetail.livestock_type}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="min-w-[5rem] rounded-full bg-green-100 px-4 py-2 text-center font-medium text-green-600">
                     사육두수
                   </span>
-                  <span>{selectedFarm.livestock_count.toLocaleString()}두</span>
+                  <span>{selectedFarmDetail.livestock_count.toLocaleString()}두</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="min-w-[5rem] rounded-full bg-green-100 px-4 py-2 text-center font-medium text-green-600">
                     면적
                   </span>
-                  <span>{selectedFarm.area_sqm.toLocaleString()}㎡</span>
+                  <span>{selectedFarmDetail.area_sqm.toLocaleString()}㎡</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="min-w-[5rem] rounded-full bg-green-100 px-4 py-2 text-center font-medium text-green-600">
                     도로명
                   </span>
-                  <span>{selectedFarm.road_address || '없음'}</span>
+                  <span>{selectedFarmDetail.road_address || '없음'}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="min-w-[5rem] rounded-full bg-green-100 px-4 py-2 text-center font-medium text-green-600">
                     지번
                   </span>
-                  <span>{selectedFarm.land_address || '없음'}</span>
+                  <span>{selectedFarmDetail.land_address || '없음'}</span>
                 </div>
               </div>
             </InfoWindow>

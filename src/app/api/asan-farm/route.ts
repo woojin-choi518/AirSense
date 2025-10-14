@@ -11,25 +11,17 @@ export async function GET() {
         id: true,
         farmName: true,
         livestockType: true,
-        landAddress: true,
-        roadAddress: true,
         livestockCount: true,
-        barnCount: true,
-        areaSqm: true,
         latitude: true,
         longitude: true,
       },
     })
-    // 👉 프론트가 기대하는 필드명으로 매핑
+    // マーカー表示に必要な最小限のデータのみ
     const formatted = farms.map((farm) => ({
       id: farm.id,
       farm_name: farm.farmName,
       livestock_type: farm.livestockType,
-      land_address: farm.landAddress,
-      road_address: farm.roadAddress,
       livestock_count: farm.livestockCount,
-      barn_count: farm.barnCount,
-      area_sqm: farm.areaSqm,
       lat: farm.latitude,
       lng: farm.longitude,
     }))
