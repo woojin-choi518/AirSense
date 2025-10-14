@@ -11,6 +11,19 @@ export const typeToGroup: Record<string, string> = {
   육계: '닭',
   오리: '오리',
 }
+export const typeToLivestockType: { name: string; initialSelected: boolean }[] = [
+  { name: '종계/산란계', initialSelected: false },
+  { name: '메추리', initialSelected: false },
+  { name: '육계', initialSelected: false },
+  { name: '오리', initialSelected: false },
+  { name: '돼지', initialSelected: true },
+  { name: '한우', initialSelected: true },
+  { name: '염소', initialSelected: false },
+  { name: '사슴', initialSelected: false },
+  { name: '육우', initialSelected: true },
+  { name: '산양', initialSelected: false },
+  { name: '젖소', initialSelected: true },
+]
 
 export const odorColorMap: Record<string, { stroke: string }> = {
   닭: { stroke: '#FFA500' },

@@ -18,6 +18,7 @@ import {
   MAX_MARKERS,
   odorColorMap,
   typeToGroup,
+  typeToLivestockType,
 } from '@/constants'
 import useScrollLock from '@/hooks/useScrollLock'
 import type { LivestockFarm } from '@/lib/types'
@@ -48,7 +49,7 @@ export default function FarmMapPage() {
   // 상태
   const [farms, setFarms] = useState<LivestockFarm[]>([])
   const [selectedFarmDetail, setSelectedFarmDetail] = useState<LivestockFarm | null>(null)
-  const [selectedTypes, setSelectedTypes] = useState<string[]>(['한우', '돼지', '젖소', '육우'])
+
   const [selectedScales, setSelectedScales] = useState<Record<string, { min: number; max: number | null }>>({})
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [showOdor, setShowOdor] = useState(true)
@@ -82,8 +83,13 @@ export default function FarmMapPage() {
   // 마커 표시 제한(성능 향상)
   const [showAllMarkers, setShowAllMarkers] = useState(false)
 
-  // memo
-  const allTypes = useMemo(() => Array.from(new Set(farms.map((f) => f.livestock_type))), [farms])
+  // 초기 선택 상태
+  const [selectedTypes, setSelectedTypes] = useState<string[]>(
+    typeToLivestockType.filter((type) => type.initialSelected).map((type) => type.name)
+  )
+
+  // 모든 축종 type 목록
+  const allTypes = typeToLivestockType.map((type) => type.name)
 
   const mapOptions = useMemo<google.maps.MapOptions>(
     () => ({
@@ -185,7 +191,7 @@ export default function FarmMapPage() {
       const farmDetail: LivestockFarm = await response.json()
       setSelectedFarmDetail(farmDetail)
     } catch (error) {
-      console.error('農場詳細情報の取得に失敗:', error)
+      console.error('농장 상세 정보 획득 실패: 농장 정보 획득 실패', error)
       setSelectedFarmDetail(null)
     }
   }, [])
