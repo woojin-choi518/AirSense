@@ -31,7 +31,8 @@ export default function TogglePanel({
         'fixed', // 모두 fixed
         horizontal, // left-4 or right-4
         widthClass,
-        `z-${z}`
+        // `z-${z}`
+        'z-9999'
       )}
       // ✅ 두 패널 모두 동일한 top 계산
       style={

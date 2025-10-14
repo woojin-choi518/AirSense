@@ -307,8 +307,6 @@ export default function FarmMapPage() {
         horizontal="left-4"
         topOffset={64}
         widthClass="min-w-[200px] max-w-[24vw] sm:max-w-[20vw]"
-        defaultOpen={false}
-        z={50}
       >
         <LivestockCombinedFilterPanel
           livestockTypes={allTypes}
@@ -354,8 +352,6 @@ export default function FarmMapPage() {
         horizontal="right-4"
         topOffset={64}
         widthClass="min-w-[160px] max-w-[24vw] sm:max-w-[20vw]"
-        defaultOpen={false}
-        z={50}
       >
         <WeatherPanel
           onForecastSelect={handleForecastSelect}
