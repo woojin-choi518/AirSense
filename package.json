@@ -8,6 +8,7 @@
     "dev": "next dev",
     "start": "next start",
     "lint": "npx eslint . --fix",
+    "db": "npx prisma studio",
     "db:sync": "npx prisma db push && npx prisma generate",
     "db:migrate": "npx prisma migrate dev && npx prisma generate"
   },

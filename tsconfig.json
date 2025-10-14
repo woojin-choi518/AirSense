@@ -21,6 +21,7 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
+      "@/public/*": ["./public/*"],
       "@/utils/*": ["./src/app/utils/*"],
       "@/components/*": ["./src/app/components/*"],
       "@/constants": ["./src/app/constants"],

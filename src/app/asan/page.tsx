@@ -5,108 +5,16 @@ import axios from 'axios'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useMediaQuery } from 'react-responsive'
 
-import CircleOverlay from '@/app/components/asan/CircleOverlay'
-import LivestockCombinedFilterPanel from '@/app/components/asan/LivestockCombinedFilterPanel'
-import LivestockPieChartPanel from '@/app/components/asan/LivestockPieChartPanel'
-import OdorOverlay from '@/app/components/asan/OdorOverlay'
-import SectorOverlay from '@/app/components/asan/SectorOverlay'
-import WeatherPanel from '@/app/components/asan/WeatherPanel'
-import TogglePanel from '@/app/components/common/TogglePanel'
-import useScrollLock from '@/app/hooks/useScrollLock'
-import type { LivestockFarm } from '@/app/lib/types'
-
-// ------------------ 상수 ------------------
-const containerStyle = { width: '100vw', height: '100dvh' }
-const ASAN_CENTER = { lat: 36.7855, lng: 127.102 }
-const DEFAULT_ZOOM = 13
-
-const iconMap: Record<string, string> = {
-  돼지: '/images/asanFarm/pig.webp',
-  사슴: '/images/asanFarm/deer.webp',
-  산양: '/images/asanFarm/mountain-goat.webp',
-  염소: '/images/asanFarm/goat.webp',
-  오리: '/images/asanFarm/duck.webp',
-  육우: '/images/asanFarm/cow.webp',
-  젖소: '/images/asanFarm/cow.webp',
-  한우: '/images/asanFarm/cow.webp',
-  메추리: '/images/asanFarm/me.webp',
-  '종계/산란계': '/images/asanFarm/chicken.webp',
-  육계: '/images/asanFarm/chicken.webp',
-}
-
-const typeToGroup: Record<string, string> = {
-  한우: '소',
-  육우: '소',
-  젖소: '소',
-  돼지: '돼지',
-  '종계/산란계': '닭',
-  육계: '닭',
-  오리: '오리',
-}
-
-const odorColorMap: Record<string, { stroke: string }> = {
-  닭: { stroke: '#FFA500' },
-  소: { stroke: '#1E90FF' },
-  돼지: { stroke: '#FF69B4' },
-  사슴: { stroke: '#32CD32' },
-  기타: { stroke: '#8884FF' },
-}
-
-const MARKER_SIZE = {
-  desktop: { default: 30, selected: 36 },
-  mobile: { default: 24, selected: 30 },
-}
-
-// ------------------ 유틸 ------------------
-const angleDiffDeg = (a: number, b: number) => Math.abs(((a - b + 540) % 360) - 180)
-
-const hashFarmsLite = (arr: Array<{ id: number; livestock_type: string; livestock_count: number }>) =>
-  arr.map((f) => `${f.id}:${f.livestock_type}:${f.livestock_count}`).join('|')
-
-function useThrottleCallback<T extends (...args: any[]) => void>(fn: T, wait = 250) {
-  const fnRef = useRef(fn)
-  const lastTsRef = useRef<number>(0)
-  const tidRef = useRef<number | null>(null)
-  useEffect(() => {
-    fnRef.current = fn
-  }, [fn])
-  return useCallback(
-    (...args: Parameters<T>) => {
-      const now = Date.now()
-      const remain = wait - (now - lastTsRef.current)
-      const run = () => {
-        lastTsRef.current = Date.now()
-        fnRef.current(...args)
-      }
-      if (remain <= 0) {
-        if (tidRef.current !== null) {
-          clearTimeout(tidRef.current)
-          tidRef.current = null
-        }
-        run()
-        return
-      }
-      if (tidRef.current !== null) clearTimeout(tidRef.current)
-      tidRef.current = window.setTimeout(() => {
-        tidRef.current = null
-        run()
-      }, remain)
-    },
-    [wait]
-  )
-}
-
-const sameFans = (
-  a: Array<{ farmId: number; type: string; radius: number; startA: number; endA: number }>,
-  b: Array<{ farmId: number; type: string; radius: number; startA: number; endA: number }>
-) =>
-  a.length === b.length &&
-  a.every((x, i) => {
-    const y = b[i]
-    return (
-      x.farmId === y.farmId && x.type === y.type && x.radius === y.radius && x.startA === y.startA && x.endA === y.endA
-    )
-  })
+import LivestockCombinedFilterPanel from '@/components/asan/LivestockCombinedFilterPanel'
+import LivestockPieChartPanel from '@/components/asan/LivestockPieChartPanel'
+import OdorOverlay from '@/components/asan/OdorOverlay'
+import WeatherPanel from '@/components/asan/WeatherPanel'
+import TogglePanel from '@/components/common/TogglePanel'
+import { ASAN_CENTER, containerStyle, DEFAULT_ZOOM, MARKER_SIZE, odorColorMap, typeToGroup } from '@/constants'
+import useScrollLock from '@/hooks/useScrollLock'
+import type { LivestockFarm } from '@/lib/types'
+import { iconMap } from '@/public/images/asanFarm'
+import { angleDiffDeg, hashFarmsLite, sameFans, useThrottleCallback } from '@/utils/index'
 
 // ------------------ 컴포넌트 ------------------
 export default function FarmMapPage() {
@@ -195,11 +103,6 @@ export default function FarmMapPage() {
       })
   }, [farms, selectedTypes, selectedScales])
 
-  const maxCount = useMemo(
-    () => (viewportFarms.length ? Math.max(...viewportFarms.map((f) => f.livestock_count)) : 1),
-    [viewportFarms]
-  )
-
   const envApplied = useMemo(() => {
     if (scenario === 'worst')
       return { scWindSpeed: 1, scHumidity: 98, scStability: 'stable' as const, scWindDir: windDir }
@@ -223,7 +126,7 @@ export default function FarmMapPage() {
         livestock_type: f.livestock_type,
         livestock_count: f.livestock_count,
       })),
-    [viewportFarms]
+    [visibleFarms]
   )
 
   // 핸들러
@@ -239,11 +142,14 @@ export default function FarmMapPage() {
     setSelectedScales((prev) => ({ ...prev, [grp]: range }))
   }, [])
 
-  const handleForecastSelect = useCallback((h: any) => {
-    setFcWindSpeed(h.wind.speed)
-    setFcHumidity(h.main.humidity)
-    setFcWindDir(h.wind.deg)
-  }, [])
+  const handleForecastSelect = useCallback(
+    (h: { wind: { speed: number; deg: number }; main: { humidity: number } }) => {
+      setFcWindSpeed(h.wind.speed)
+      setFcHumidity(h.main.humidity)
+      setFcWindDir(h.wind.deg)
+    },
+    []
+  )
 
   // 데이터 fetch
   useEffect(() => {
@@ -450,7 +356,7 @@ export default function FarmMapPage() {
             <Marker
               key={farm.id}
               position={{ lat: farm.lat, lng: farm.lng }}
-              icon={{ url: iconMap[farm.livestock_type], ...markerIcon(farm.id === selectedId) }}
+              icon={{ url: iconMap[farm.livestock_type].src, ...markerIcon(farm.id === selectedId) }}
               onClick={() => setSelectedId(farm.id)}
               title={farm.farm_name}
             />
