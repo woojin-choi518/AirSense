@@ -213,6 +213,7 @@ export default function FarmMapPage() {
         windSpeed: debouncedWindSpeed.toString(),
         humidity: debouncedHumidity.toString(),
         stability: debouncedStability,
+        types: selectedTypes.join(','),
       })
 
       const response = await fetch(`/api/asan-farm?${params}`)
@@ -224,7 +225,7 @@ export default function FarmMapPage() {
       console.error(err)
       alert('농가 데이터를 불러오는 중 오류가 발생했습니다.')
     }
-  }, [debouncedWindDir, debouncedWindSpeed, debouncedHumidity, debouncedStability])
+  }, [debouncedWindDir, debouncedWindSpeed, debouncedHumidity, debouncedStability, selectedTypes])
 
   useEffect(() => {
     fetchFarmData()
