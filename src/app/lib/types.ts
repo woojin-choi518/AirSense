@@ -9,4 +9,9 @@ export interface LivestockFarm {
   area_sqm: number
   lat: number
   lng: number
+  windData?: {
+    radius: number
+    startAngle: number
+    endAngle: number
+  } | null
 }

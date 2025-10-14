@@ -9,7 +9,6 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false)
   const pathname = usePathname()
 
-  // pathnameに基づいてナビゲーション項目を動的に決定
   const navItems = pathname === '/' ? [{ label: 'Asan', href: '/asan' }] : [{ label: 'Home', href: '/' }]
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 0)

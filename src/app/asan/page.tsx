@@ -2,7 +2,7 @@
 
 import { GoogleMap, InfoWindow, Marker, useJsApiLoader } from '@react-google-maps/api'
 import axios from 'axios'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useMediaQuery } from 'react-responsive'
 
 import LivestockCombinedFilterPanel from '@/components/asan/LivestockCombinedFilterPanel'
@@ -14,9 +14,8 @@ import { ASAN_CENTER, containerStyle, DEFAULT_ZOOM, MARKER_SIZE, odorColorMap, t
 import useScrollLock from '@/hooks/useScrollLock'
 import type { LivestockFarm } from '@/lib/types'
 import { iconMap } from '@/public/images/asanFarm'
-import { angleDiffDeg, hashFarmsLite, sameFans, useThrottleCallback } from '@/utils/index'
+import { angleDiffDeg } from '@/utils/index'
 
-// ------------------ 컴포넌트 ------------------
 export default function FarmMapPage() {
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' })
   useScrollLock(true)
@@ -42,18 +41,6 @@ export default function FarmMapPage() {
   const [fcWindDir, setFcWindDir] = useState(0)
   const [selFcIndex, setSelFcIndex] = useState(0)
 
-  // 워커 결과
-  const [odorFans, setOdorFans] = useState<
-    Array<{
-      farmId: number
-      type: string
-      center: { lat: number; lng: number }
-      radius: number
-      startA: number
-      endA: number
-    }>
-  >([])
-
   // 시나리오
   const [scenario] = useState<'worst' | 'average' | 'best'>('average')
 
@@ -63,8 +50,6 @@ export default function FarmMapPage() {
     libraries: ['geometry'],
     id: 'asan-map-loader',
   })
-
-  const globalMaxCount = useMemo(() => (farms.length ? Math.max(...farms.map((f) => f.livestock_count)) : 1), [farms])
 
   // 화면 안의 농가만 보관
   const [viewportFarms, setViewportFarms] = useState<LivestockFarm[]>([])
@@ -104,6 +89,20 @@ export default function FarmMapPage() {
       })
   }, [farms, selectedTypes, selectedScales])
 
+  // フィルタリングされた農場の風の方向データ
+  const visibleWindData = useMemo(() => {
+    return visibleFarms
+      .filter((farm) => farm.windData !== null)
+      .map((farm) => ({
+        farmId: farm.id,
+        type: farm.livestock_type,
+        center: { lat: farm.lat, lng: farm.lng },
+        radius: farm.windData!.radius,
+        startA: farm.windData!.startAngle,
+        endA: farm.windData!.endAngle,
+      }))
+  }, [visibleFarms])
+
   const envApplied = useMemo(() => {
     if (scenario === 'worst')
       return { scWindSpeed: 1, scHumidity: 98, scStability: 'stable' as const, scWindDir: windDir }
@@ -115,18 +114,6 @@ export default function FarmMapPage() {
   }, [scenario, windDir, windSpeed, humidity, selFcIndex, fcWindSpeed, fcHumidity, fcWindDir])
 
   const { scWindSpeed, scHumidity, scStability, scWindDir } = envApplied
-
-  const visibleFarmsLite = useMemo(
-    () =>
-      visibleFarms.map((f) => ({
-        id: f.id,
-        lat: f.lat,
-        lng: f.lng,
-        livestock_type: f.livestock_type,
-        livestock_count: f.livestock_count,
-      })),
-    [visibleFarms]
-  )
 
   // 핸들러
   const handleToggleType = useCallback((t: string) => {
@@ -150,7 +137,7 @@ export default function FarmMapPage() {
     []
   )
 
-  // 農場詳細情報を取得
+  // 농장 상세 정보 얻기
   const fetchFarmDetail = useCallback(async (farmId: number) => {
     try {
       const response = await fetch(`/api/asan-farm/${farmId}`)
@@ -163,7 +150,7 @@ export default function FarmMapPage() {
     }
   }, [])
 
-  // 農場選択時の処理
+  // 농장 선택 시 처리
   const handleFarmSelect = useCallback(
     (farmId: number) => {
       setSelectedId(farmId)
@@ -173,18 +160,29 @@ export default function FarmMapPage() {
   )
 
   // 데이터 fetch
+  const fetchFarmData = useCallback(async () => {
+    try {
+      const params = new URLSearchParams({
+        windDir: scWindDir.toString(),
+        windSpeed: scWindSpeed.toString(),
+        humidity: scHumidity.toString(),
+        stability: scStability,
+      })
+
+      const response = await fetch(`/api/asan-farm?${params}`)
+      if (!response.ok) throw new Error(response.statusText)
+
+      const data = await response.json()
+      setFarms(data)
+    } catch (err) {
+      console.error(err)
+      alert('농가 데이터를 불러오는 중 오류가 발생했습니다.')
+    }
+  }, [scWindDir, scWindSpeed, scHumidity, scStability])
+
   useEffect(() => {
-    fetch('/api/asan-farm')
-      .then((res) => {
-        if (!res.ok) throw new Error(res.statusText)
-        return res.json()
-      })
-      .then((data: LivestockFarm[]) => setFarms(data))
-      .catch((err) => {
-        console.error(err)
-        alert('농가 데이터를 불러오는 중 오류가 발생했습니다.')
-      })
-  }, [])
+    fetchFarmData()
+  }, [fetchFarmData])
 
   // 날씨 폴링 (setState 남발 방지: 변화 임계값)
   useEffect(() => {
@@ -220,76 +218,6 @@ export default function FarmMapPage() {
     const iv = window.setInterval(fetchWeather, 300_000)
     return () => window.clearInterval(iv)
   }, [])
-
-  // 워커 세팅
-  const workerRef = useRef<Worker | null>(null)
-  useEffect(() => {
-    try {
-      const w = new Worker(new URL('@/app/workers/odorWorker.ts', import.meta.url), { type: 'module' })
-      workerRef.current = w
-
-      w.onerror = (e) => console.error('[odorWorker] runtime error:', e.message, e)
-      w.onmessageerror = (e) => console.error('[odorWorker] messageerror:', e)
-
-      w.onmessage = (e: MessageEvent<typeof odorFans>) => {
-        const next = e.data
-        requestAnimationFrame(() => {
-          setOdorFans((prev) => (sameFans(prev, next) ? prev : next))
-        })
-      }
-    } catch (err) {
-      console.error('[odorWorker] create failed:', err)
-    }
-    return () => {
-      if (workerRef.current) {
-        workerRef.current.terminate()
-        workerRef.current = null
-      }
-    }
-  }, [])
-
-  // 워커 호출: 환경값 OR 농가집합이 바뀌면 (스로틀)
-  const lastEnvRef = useRef({ spd: 0, hum: 0, dir: 0, stab: 'neutral' as const })
-  const farmsHashRef = useRef<string>('')
-  const postThrottled = useThrottleCallback((payload: any) => {
-    workerRef.current?.postMessage(payload)
-  }, 250)
-
-  useEffect(() => {
-    if (!workerRef.current) return
-
-    const payload = {
-      farms: visibleFarmsLite,
-      maxCount: globalMaxCount,
-      scWindSpeed,
-      scHumidity,
-      scStability,
-      scWindDir,
-    }
-
-    const env = { spd: scWindSpeed, hum: scHumidity, dir: scWindDir, stab: scStability }
-    const envDidChange =
-      Math.abs(env.spd - lastEnvRef.current.spd) > 0.2 ||
-      Math.abs(env.hum - lastEnvRef.current.hum) > 3 ||
-      angleDiffDeg(env.dir, lastEnvRef.current.dir) > 3 ||
-      env.stab !== lastEnvRef.current.stab
-
-    const nextHash = hashFarmsLite(visibleFarmsLite)
-    const farmsDidChange = nextHash !== farmsHashRef.current
-
-    if (!envDidChange && !farmsDidChange) return
-
-    // Fix: Ensure type compatibility for lastEnvRef.current assignment
-    lastEnvRef.current = {
-      spd: env.spd,
-      hum: env.hum,
-      dir: env.dir,
-      stab: 'neutral' as const, // force stab to 'neutral' to match type
-    }
-    farmsHashRef.current = nextHash
-
-    postThrottled(payload)
-  }, [visibleFarmsLite, globalMaxCount, scWindSpeed, scHumidity, scStability, scWindDir, postThrottled])
 
   useEffect(() => {
     if (!map) return
@@ -330,6 +258,8 @@ export default function FarmMapPage() {
         horizontal="left-4"
         topOffset={64}
         widthClass="min-w-[200px] max-w-[24vw] sm:max-w-[20vw]"
+        defaultOpen={false}
+        z={50}
       >
         <LivestockCombinedFilterPanel
           livestockTypes={allTypes}
@@ -349,6 +279,8 @@ export default function FarmMapPage() {
         horizontal="right-4"
         topOffset={64}
         widthClass="min-w-[160px] max-w-[24vw] sm:max-w-[20vw]"
+        defaultOpen={false}
+        z={50}
       >
         <WeatherPanel
           onForecastSelect={handleForecastSelect}
@@ -386,7 +318,7 @@ export default function FarmMapPage() {
           {showOdor &&
             map &&
             mapIdle &&
-            odorFans.map((f) => {
+            visibleWindData.map((f) => {
               const cat = ['한우', '육우', '젖소'].includes(f.type)
                 ? '소'
                 : f.type === '돼지'
