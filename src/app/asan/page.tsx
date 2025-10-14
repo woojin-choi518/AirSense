@@ -213,8 +213,10 @@ export default function FarmMapPage() {
         windSpeed: debouncedWindSpeed.toString(),
         humidity: debouncedHumidity.toString(),
         stability: debouncedStability,
-        types: selectedTypes.join(','),
       })
+      if (selectedTypes.length > 0) {
+        params.set('types', selectedTypes.join(','))
+      }
 
       const response = await fetch(`/api/asan-farm?${params}`)
       if (!response.ok) throw new Error(response.statusText)

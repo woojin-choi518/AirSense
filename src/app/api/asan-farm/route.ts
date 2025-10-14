@@ -70,14 +70,15 @@ export async function GET(request: NextRequest) {
     const windSpeed = parseFloat(searchParams.get('windSpeed') || '1')
     const humidity = parseFloat(searchParams.get('humidity') || '50')
     const stability = (searchParams.get('stability') || 'neutral') as 'stable' | 'neutral' | 'unstable'
-    const types = searchParams.get('types')?.split(',') || []
+    const typesParam = searchParams.get('types')
+    const types = typesParam ? typesParam.split(',').filter((t) => t.trim().length > 0) : []
 
     const farms = await prisma.livestockFarm.findMany({
       where: {
         latitude: { not: null },
         longitude: { not: null },
         livestockCount: { gt: 0 },
-        livestockType: { in: types },
+        ...(types.length > 0 ? { livestockType: { in: types } } : {}),
       },
       select: {
         id: true,
