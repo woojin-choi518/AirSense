@@ -9,7 +9,6 @@ export async function GET() {
     const farms = await prisma.livestockFarm.findMany({
       select: {
         id: true,
-        farmName: true,
         livestockType: true,
         livestockCount: true,
         latitude: true,
@@ -19,7 +18,6 @@ export async function GET() {
     // マーカー表示に必要な最小限のデータのみ
     const formatted = farms.map((farm) => ({
       id: farm.id,
-      farm_name: farm.farmName,
       livestock_type: farm.livestockType,
       livestock_count: farm.livestockCount,
       lat: farm.latitude,

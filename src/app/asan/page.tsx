@@ -379,7 +379,6 @@ export default function FarmMapPage() {
               position={{ lat: farm.lat, lng: farm.lng }}
               icon={{ url: iconMap[farm.livestock_type].src, ...markerIcon(farm.id === selectedId) }}
               onClick={() => handleFarmSelect(farm.id)}
-              title={farm.farm_name}
             />
           ))}
 
