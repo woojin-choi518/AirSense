@@ -11,7 +11,6 @@ export default function TogglePanel({
   widthClass = 'min-w-[220px] max-w-[88vw] sm:min-w-[280px] sm:max-w-[24vw]',
   topOffset,
   bottomOffset,
-  z = 40,
   defaultOpen = false,
 }: {
   title: string
@@ -20,7 +19,6 @@ export default function TogglePanel({
   widthClass?: string
   topOffset?: number // px
   bottomOffset?: number // px
-  z?: number
   defaultOpen?: boolean
 }) {
   const [open, setOpen] = React.useState(defaultOpen)
@@ -31,7 +29,6 @@ export default function TogglePanel({
         'fixed', // 모두 fixed
         horizontal, // left-4 or right-4
         widthClass,
-        // `z-${z}`
         'z-9999'
       )}
       // ✅ 두 패널 모두 동일한 top 계산
