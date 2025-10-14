@@ -1,10 +1,9 @@
-// pages/api/farms.ts
 import { PrismaClient } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 
 const prisma = new PrismaClient()
 
-// 風の方向計算用の定数
+// 바람 방향 계산용 상수
 const typeMultiplier: Record<string, number> = {
   돼지: 3.0,
   육계: 1.4,
@@ -13,7 +12,7 @@ const typeMultiplier: Record<string, number> = {
   사슴: 1.0,
 }
 
-// 風の方向計算関数
+// 바람 방향 계산 함수
 function calculateWindDirection(
   farms: Array<{
     id: number
@@ -34,7 +33,7 @@ function calculateWindDirection(
   const maxCount = Math.max(...farms.map((f) => f.livestockCount), 1)
   const safeMax = Math.max(maxCount, 1)
 
-  // 環境係数の計算
+  // 환경 계수 계산
   const windMul = windSpeed <= 0.5 ? 1.5 : windSpeed >= 1.5 ? 0.7 : 1.0
   const stabilityMul = stability === 'stable' ? 1.4 : stability === 'unstable' ? 0.8 : 1.0
   const humidityMul = 1 + (humidity / 100) * 0.3
@@ -65,7 +64,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
 
-    // クエリパラメータから風の条件を取得（デフォルト値付き）
+    // 쿼리 파라미터에서 바람 조건을 가져옴 (기본값 포함)
     const windDir = parseFloat(searchParams.get('windDir') || '0')
     const windSpeed = parseFloat(searchParams.get('windSpeed') || '1')
     const humidity = parseFloat(searchParams.get('humidity') || '50')
@@ -87,13 +86,13 @@ export async function GET(request: NextRequest) {
         latitude: true,
         longitude: true,
       },
-      orderBy: { livestockCount: 'desc' }, // 大きい農場を優先
+      orderBy: { livestockCount: 'desc' }, // 큰 농장을 우선
     })
 
-    // 風の方向計算
+    // 바람 방향 계산
     const windData = calculateWindDirection(farms, windDir, windSpeed, humidity, stability)
 
-    // マーカー表示に必要なデータと風の方向データを統合
+    // 마커 표시에 필요한 데이터와 바람 방향 데이터를 통합
     const formatted = farms.map((farm) => {
       const windInfo = windData.find((w) => w.farmId === farm.id)
       return {
@@ -102,7 +101,7 @@ export async function GET(request: NextRequest) {
         livestock_count: farm.livestockCount,
         lat: farm.latitude,
         lng: farm.longitude,
-        // 風の方向データを追加
+        // 바람 방향 데이터를 추가
         windData: windInfo
           ? {
               radius: windInfo.radius,
@@ -116,7 +115,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(formatted, {
       status: 200,
       headers: {
-        'Cache-Control': 'public, max-age=300, s-maxage=300', // 5分キャッシュ
+        'Cache-Control': 'public, max-age=300, s-maxage=300', // 5분 캐시
         'CDN-Cache-Control': 'public, max-age=300',
       },
     })
