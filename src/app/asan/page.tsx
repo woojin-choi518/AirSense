@@ -10,11 +10,36 @@ import LivestockPieChartPanel from '@/components/asan/LivestockPieChartPanel'
 import OdorOverlay from '@/components/asan/OdorOverlay'
 import WeatherPanel from '@/components/asan/WeatherPanel'
 import TogglePanel from '@/components/common/TogglePanel'
-import { ASAN_CENTER, containerStyle, DEFAULT_ZOOM, MARKER_SIZE, odorColorMap, typeToGroup } from '@/constants'
+import {
+  ASAN_CENTER,
+  containerStyle,
+  DEFAULT_ZOOM,
+  MARKER_SIZE,
+  MAX_MARKERS,
+  odorColorMap,
+  typeToGroup,
+} from '@/constants'
 import useScrollLock from '@/hooks/useScrollLock'
 import type { LivestockFarm } from '@/lib/types'
 import { iconMap } from '@/public/images/asanFarm'
 import { angleDiffDeg } from '@/utils/index'
+
+// 디바운스 기능
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value)
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value)
+    }, delay)
+
+    return () => {
+      clearTimeout(handler)
+    }
+  }, [value, delay])
+
+  return debouncedValue
+}
 
 export default function FarmMapPage() {
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' })
@@ -54,6 +79,9 @@ export default function FarmMapPage() {
   // 화면 안의 농가만 보관
   const [viewportFarms, setViewportFarms] = useState<LivestockFarm[]>([])
 
+  // 마커 표시 제한(성능 향상)
+  const [showAllMarkers, setShowAllMarkers] = useState(false)
+
   // memo
   const allTypes = useMemo(() => Array.from(new Set(farms.map((f) => f.livestock_type))), [farms])
 
@@ -80,16 +108,22 @@ export default function FarmMapPage() {
   )
 
   const visibleFarms = useMemo(() => {
-    return farms
+    const filtered = farms
       .filter((f) => selectedTypes.includes(f.livestock_type))
       .filter((f) => {
         const grp = typeToGroup[f.livestock_type]
         const range = selectedScales[grp] || { min: 0, max: null as number | null }
         return f.livestock_count >= range.min && (range.max === null || f.livestock_count < range.max)
       })
-  }, [farms, selectedTypes, selectedScales])
 
-  // フィルタリングされた農場の風の方向データ
+    // 마커 수 제한 (성능 향상)
+    if (!showAllMarkers && filtered.length > MAX_MARKERS) {
+      return filtered.slice(0, MAX_MARKERS)
+    }
+    return filtered
+  }, [farms, selectedTypes, selectedScales, showAllMarkers])
+
+  // 필터링된 농장 풍향 데이터
   const visibleWindData = useMemo(() => {
     return visibleFarms
       .filter((farm) => farm.windData !== null)
@@ -114,6 +148,12 @@ export default function FarmMapPage() {
   }, [scenario, windDir, windSpeed, humidity, selFcIndex, fcWindSpeed, fcHumidity, fcWindDir])
 
   const { scWindSpeed, scHumidity, scStability, scWindDir } = envApplied
+
+  // 디바운스된 환경 파라미터(API 호출 빈도 감소)
+  const debouncedWindDir = useDebounce(scWindDir, 500)
+  const debouncedWindSpeed = useDebounce(scWindSpeed, 500)
+  const debouncedHumidity = useDebounce(scHumidity, 500)
+  const debouncedStability = useDebounce(scStability, 500)
 
   // 핸들러
   const handleToggleType = useCallback((t: string) => {
@@ -163,10 +203,10 @@ export default function FarmMapPage() {
   const fetchFarmData = useCallback(async () => {
     try {
       const params = new URLSearchParams({
-        windDir: scWindDir.toString(),
-        windSpeed: scWindSpeed.toString(),
-        humidity: scHumidity.toString(),
-        stability: scStability,
+        windDir: debouncedWindDir.toString(),
+        windSpeed: debouncedWindSpeed.toString(),
+        humidity: debouncedHumidity.toString(),
+        stability: debouncedStability,
       })
 
       const response = await fetch(`/api/asan-farm?${params}`)
@@ -178,7 +218,7 @@ export default function FarmMapPage() {
       console.error(err)
       alert('농가 데이터를 불러오는 중 오류가 발생했습니다.')
     }
-  }, [scWindDir, scWindSpeed, scHumidity, scStability])
+  }, [debouncedWindDir, debouncedWindSpeed, debouncedHumidity, debouncedStability])
 
   useEffect(() => {
     fetchFarmData()
@@ -271,6 +311,32 @@ export default function FarmMapPage() {
           showOdor={showOdor}
           onToggleOdor={() => setShowOdor((v) => !v)}
         />
+
+        {/* 마커 표시 제한 UI */}
+        {visibleFarms.length > MAX_MARKERS && !showAllMarkers && (
+          <div className="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
+            <p className="mb-2 text-sm text-yellow-800">
+              {visibleFarms.length}개의 농장 중 {MAX_MARKERS}개만 표시됩니다.
+            </p>
+            <button
+              onClick={() => setShowAllMarkers(true)}
+              className="rounded bg-yellow-200 px-3 py-1 text-sm transition-colors hover:bg-yellow-300"
+            >
+              모두 표시
+            </button>
+          </div>
+        )}
+
+        {showAllMarkers && (
+          <div className="mt-2">
+            <button
+              onClick={() => setShowAllMarkers(false)}
+              className="rounded bg-gray-200 px-3 py-1 text-sm transition-colors hover:bg-gray-300"
+            >
+              표시 제한 해제
+            </button>
+          </div>
+        )}
       </TogglePanel>
 
       {/* 우측 날씨 */}

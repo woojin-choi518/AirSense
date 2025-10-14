@@ -72,6 +72,11 @@ export async function GET(request: NextRequest) {
     const stability = (searchParams.get('stability') || 'neutral') as 'stable' | 'neutral' | 'unstable'
 
     const farms = await prisma.livestockFarm.findMany({
+      where: {
+        latitude: { not: null },
+        longitude: { not: null },
+        livestockCount: { gt: 0 },
+      },
       select: {
         id: true,
         livestockType: true,
@@ -79,6 +84,7 @@ export async function GET(request: NextRequest) {
         latitude: true,
         longitude: true,
       },
+      orderBy: { livestockCount: 'desc' }, // 大きい農場を優先
     })
 
     // 風の方向計算
@@ -104,7 +110,13 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    return NextResponse.json(formatted, { status: 200 })
+    return NextResponse.json(formatted, {
+      status: 200,
+      headers: {
+        'Cache-Control': 'public, max-age=300, s-maxage=300', // 5分キャッシュ
+        'CDN-Cache-Control': 'public, max-age=300',
+      },
+    })
   } catch (error) {
     console.error('API /api/farms error:', error)
     return NextResponse.json({ error: 'Failed to fetch livestock farms' }, { status: 500 })

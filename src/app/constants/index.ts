@@ -24,3 +24,5 @@ export const MARKER_SIZE = {
   desktop: { default: 30, selected: 36 },
   mobile: { default: 24, selected: 30 },
 }
+
+export const MAX_MARKERS = 700
