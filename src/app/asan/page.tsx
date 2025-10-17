@@ -24,6 +24,8 @@ import SectorOverlay from '@/app/components/asan/SectorOverlay';
 import CircleOverlay from '@/app/components/asan/CircleOverlay';
 import OdorOverlay from '@/app/components/asan/OdorOverlay';
 import TogglePanel from '@/app/components/common/TogglePanel';
+import CurrentLocationMarker from '@/app/components/common/CurrentLocationMarker';
+import CurrentLocationControls from '@/app/components/common/CurrentLocationControls';
 import useScrollLock from '@/app/hooks/useScrollLock';
 
 // ------------------ 상수 ------------------
@@ -115,6 +117,9 @@ export default function FarmMapPage() {
   const [showOdor, setShowOdor] = useState(true);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [mapIdle, setMapIdle] = useState(true);
+  
+  // 현재 위치 상태
+  const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
 
   // 날씨
   const [windDir, setWindDir] = useState(0);
@@ -233,6 +238,18 @@ export default function FarmMapPage() {
     setFcHumidity(h.main.humidity);
     setFcWindDir(h.wind.deg);
   }, []);
+
+  // 현재 위치 관련 핸들러
+  const handleLocationUpdate = useCallback((location: { lat: number; lng: number }) => {
+    setCurrentLocation(location);
+  }, []);
+
+  const handleGoToCurrentLocation = useCallback(() => {
+    if (!map || !currentLocation) return;
+    
+    map.panTo(currentLocation);
+    map.setZoom(15); // 현재 위치로 이동할 때 줌 레벨 조정
+  }, [map, currentLocation]);
 
   // 데이터 fetch
   useEffect(() => {
@@ -462,6 +479,11 @@ export default function FarmMapPage() {
             );
           })}
 
+          {/* 현재 위치 마커 */}
+          {currentLocation && (
+            <CurrentLocationMarker position={currentLocation} />
+          )}
+
           {selectedFarm && (
             <InfoWindow
               position={{ lat: selectedFarm.lat, lng: selectedFarm.lng }}
@@ -494,6 +516,13 @@ export default function FarmMapPage() {
             </InfoWindow>
           )}
         </GoogleMap>
+        
+        {/* 현재 위치 컨트롤 */}
+        <CurrentLocationControls
+          onLocationUpdate={handleLocationUpdate}
+          currentLocation={currentLocation}
+          onGoToLocation={handleGoToCurrentLocation}
+        />
       </div>
 
       {/* 하단 차트 */}
