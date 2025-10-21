@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["airsense"]
 }
 
 model LivestockFarm {
@@ -18,157 +19,29 @@ model LivestockFarm {
   areaSqm        Float   @map("area_sqm")
   latitude       Float?
   longitude      Float?
+
+  @@map("LivestockFarm")
+  @@schema("airsense")
 }
 
-model LocationInfo {
-  id              Int     @id @default(autoincrement())
-  location        String  @db.VarChar(10)
-  city            String  @db.VarChar(50)
-  latitude        Float
-  longitude       Float
-  species         String  @db.VarChar(50)
-  diversity       Float?
-  yield_g         Float?
-  contribution    String? @db.VarChar(255)
-  main_microbiome String? @db.VarChar(255)
+model Complaint {
+  id           Int      @id @default(autoincrement())
+  receivedDate DateTime @map("received_date")
+  content      String
+  region       String?
+  year         Int?
+  timePeriod   String?  @map("time_period")
+  latitude     Float?
+  longitude    Float?
+  roadAddress  String?  @map("road_address")
+  landAddress  String?  @map("land_address")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  @@index([location], map: "idx_location_info_location")
-  @@index([species], map: "idx_location_info_species")
-}
-
-model PolarMicrobe {
-  id              String    @id @default(dbgenerated("gen_random_uuid()"))
-  ncbi_id         String?
-  organism        String?
-  latitude        Float?
-  longitude       Float?
-  original_date   String?
-  collection_date DateTime? @db.Timestamp(6)
-  year            Int?
-  sequence        String?
-  createdAt       DateTime? @default(now()) @db.Timestamp(6)
-}
-
-model Sample {
-  id                          String   @id
-  latitude                    Float?
-  longitude                   Float?
-  description                 String?
-  createdAt                   DateTime @default(now())
-  env_biome                   String
-  env_feature                 String?
-  physical_specimen_remaining Boolean
-  qiita_study_id              Int
-  sample_id                   String   @unique
-  sample_id_full              String?
-  sample_type                 String?
-  top5_asv                    String[]
-}
-
-model Strain {
-  id                      Int     @id @default(autoincrement())
-  strain_no               String  @unique
-  scientific_name         String?
-  catalogue_no            String?
-  kingdom                 String?
-  phylum                  String?
-  class                   String?
-  order                   String?
-  family                  String?
-  genus                   String?
-  locality                String?
-  latitude                Float?
-  longitude               Float?
-  elevation               Float?
-  depth                   Float?
-  sampling_site           String?
-  environment             String?
-  temperature_c           Float?
-  ph                      Float?
-  salinity_ppt            Float?
-  habitat                 String?
-  host                    String?
-  culture_media           String?
-  culture_temperature_c   Float?
-  culture_ph              Float?
-  culture_aeration        String?
-  culture_other_condition String?
-  products                String?
-  biohazard               String?
-  other_characteristics   String?
-}
-
-model Taxonomy {
-  id         String  @id
-  asvSeq     String  @unique
-  domain     String?
-  phylum     String?
-  class      String?
-  order      String?
-  family     String?
-  genus      String?
-  species    String?
-  confidence Float?
-}
-
-model metrics {
-  id                Int    @id @default(autoincrement())
-  kingdom           String
-  season            String
-  meanRawReads      Int
-  meanFilteredReads Int
-}
-
-model phylum_abundance {
-  id          Int    @id @default(autoincrement())
-  compartment String
-  phylum      String
-  minPct      Float
-  maxPct      Float
-}
-
-model protected_tree {
-  id                          Int       @id @default(autoincrement())
-  province_name               String
-  district_name               String
-  managing_agency             String?
-  designation_number          String?
-  protection_designation_date DateTime?
-  protection_revocation_date  DateTime?
-  protection_type             String?
-  family_name                 String?
-  scientific_name             String?
-  tree_category               String?
-  tree_count                  Int?
-  tree_age                    Int?
-  tree_height                 Float?
-  breast_height_circumference Float?
-  crown_diameter              Float?
-  grade                       String?
-  land_use_category           String?
-  road_name_address           String?
-  wgs84_latitude              Float?
-  wgs84_longitude             Float?
-  data_reference_date         DateTime?
-}
-
-model tree_samples {
-  id              Int         @id @default(autoincrement())
-  group           SampleGroup
-  area            String
-  latitude        Float
-  longitude       Float
-  declineSymptoms Boolean
-  replicates      String
-  springSampling  DateTime
-  summerSampling  DateTime
-  compartments    String
-  microorganisms  String
-}
-
-enum SampleGroup {
-  ASH
-  BSD
-  NSH
-  NSD
+  @@index([latitude, longitude])
+  @@index([receivedDate])
+  @@index([region])
+  @@index([year])
+  @@map("Complaint")
+  @@schema("airsense")
 }
