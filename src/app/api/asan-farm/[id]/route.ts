@@ -1,7 +1,6 @@
-import { PrismaClient } from '@prisma/client'
 import { NextResponse } from 'next/server'
 
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -49,7 +48,5 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   } catch (error) {
     console.error('API /api/asan-farm/[id] error:', error)
     return NextResponse.json({ error: 'Failed to fetch farm details' }, { status: 500 })
-  } finally {
-    await prisma.$disconnect()
   }
 }
