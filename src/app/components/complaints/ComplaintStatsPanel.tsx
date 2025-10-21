@@ -1,8 +1,9 @@
 'use client'
 
-import { BarChart3, TrendingUp, Calendar } from 'lucide-react'
+import { BarChart3, Calendar, TrendingUp } from 'lucide-react'
+
+import { ChartConfig, ChartData } from './StatChart'
 import StatSection from './StatSection'
-import { ChartData, ChartConfig } from './StatChart'
 
 interface ComplaintStats {
   total: number
@@ -42,19 +43,16 @@ export default function ComplaintStatsPanel({ stats, config = {} }: ComplaintSta
   }
 
   // 지역별 데이터 변환
-  const regionData: ChartData[] = (stats.byRegion || [])
-    .slice(0, config.regionChart?.maxItems || 5)
-    .map(item => ({
-      name: item.region || '알 수 없음',
-      value: item.count || 0
-    }))
+  const regionData: ChartData[] = (stats.byRegion || []).slice(0, config.regionChart?.maxItems || 5).map((item) => ({
+    name: item.region || '알 수 없음',
+    value: item.count || 0,
+  }))
 
   // 월별 데이터 변환
-  const monthData: ChartData[] = (stats.byMonth || [])
-    .map(item => ({
-      name: item.month || '알 수 없음',
-      value: item.count || 0
-    }))
+  const monthData: ChartData[] = (stats.byMonth || []).map((item) => ({
+    name: item.month || '알 수 없음',
+    value: item.count || 0,
+  }))
 
   // 지역별 차트 설정
   const regionConfig: ChartConfig = {
@@ -66,9 +64,9 @@ export default function ComplaintStatsPanel({ stats, config = {} }: ComplaintSta
     trendColor: '#10b981',
     trendGradientColors: ['#10b981', '#34d399', '#6ee7b7'],
     xAxisLabel: '지역',
-    formatXAxis: (value: string) => value.length > 6 ? value.substring(0, 6) + '...' : value,
+    formatXAxis: (value: string) => (value.length > 6 ? value.substring(0, 6) + '...' : value),
     formatTooltip: (value: number) => [`${value}건`, '민원 수'],
-    formatLabel: (label: string) => `지역: ${label}`
+    formatLabel: (label: string) => `지역: ${label}`,
   }
 
   // 월별 차트 설정
@@ -83,24 +81,24 @@ export default function ComplaintStatsPanel({ stats, config = {} }: ComplaintSta
     xAxisLabel: '월',
     formatXAxis: (value: string) => `${value}월`,
     formatTooltip: (value: number) => [`${value}건`, '민원 수'],
-    formatLabel: (label: string) => `월: ${label}월`
+    formatLabel: (label: string) => `월: ${label}월`,
   }
 
   return (
     <div className="space-y-6">
       {/* 총 민원 건수 */}
       {config.showTotal !== false && (
-        <div className="rounded-2xl bg-gradient-to-br from-blue-50/80 to-indigo-50/80 backdrop-blur-sm p-6 shadow-lg border border-blue-100/50 hover:shadow-xl transition-all duration-300">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg">
+        <div className="rounded-2xl border border-blue-100/50 bg-gradient-to-br from-blue-50/80 to-indigo-50/80 p-6 shadow-lg backdrop-blur-sm transition-all duration-300 hover:shadow-xl">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 p-3 shadow-lg">
               <BarChart3 className="h-6 w-6 text-white" />
             </div>
             <h3 className="text-lg font-semibold text-gray-800">총 민원 건수</h3>
           </div>
-          <div className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-4xl font-bold text-transparent">
             {stats.total || 0}
           </div>
-          <p className="text-sm text-gray-600 mt-2 font-medium">건</p>
+          <p className="mt-2 text-sm font-medium text-gray-600">건</p>
         </div>
       )}
 

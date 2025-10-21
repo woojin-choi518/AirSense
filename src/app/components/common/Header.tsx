@@ -1,6 +1,6 @@
 'use client'
 
-import { House, Map, AlertCircle } from 'lucide-react'
+import { AlertCircle, House, Map } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -9,16 +9,17 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false)
   const pathname = usePathname()
 
-  const navItems = pathname === '/' 
-    ? [
-        { label: '악취 지도', href: '/asan', icon: Map },
-        { label: '민원 지도', href: '/complaints', icon: AlertCircle }
-      ] 
-    : [
-        { label: 'Home', href: '/', icon: House },
-        { label: '악취 지도', href: '/asan', icon: Map },
-        { label: '민원 지도', href: '/complaints', icon: AlertCircle }
-      ]
+  const navItems =
+    pathname === '/'
+      ? [
+          { label: '악취 지도', href: '/asan', icon: Map },
+          { label: '민원 지도', href: '/complaints', icon: AlertCircle },
+        ]
+      : [
+          { label: 'Home', href: '/', icon: House },
+          { label: '악취 지도', href: '/asan', icon: Map },
+          { label: '민원 지도', href: '/complaints', icon: AlertCircle },
+        ]
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 0)
     window.addEventListener('scroll', onScroll)
@@ -61,7 +62,9 @@ export default function Header() {
                       : 'text-white'
                 } `}
               >
-                <span className="text-sm"><Icon /></span>
+                <span className="text-sm">
+                  <Icon />
+                </span>
                 <span className="text-sm">{label}</span>
               </Link>
             )

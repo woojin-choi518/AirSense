@@ -5,8 +5,7 @@ export const runtime = 'nodejs'
 
 // Prisma singleton (dev hot-reload 안전)
 const globalForPrisma = global as unknown as { prisma?: PrismaClient }
-const prisma: PrismaClient =
-  globalForPrisma.prisma || new PrismaClient()
+const prisma: PrismaClient = globalForPrisma.prisma || new PrismaClient()
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 // 바람 방향 계산용 상수

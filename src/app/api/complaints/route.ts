@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { NextRequest, NextResponse } from 'next/server'
 
 const prisma = new PrismaClient()
 
@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   try {
     console.log('민원 API 호출 시작')
     const { searchParams } = new URL(request.url)
-    
+
     // 쿼리 파라미터 추출
     const startDate = searchParams.get('startDate')
     const endDate = searchParams.get('endDate')
@@ -114,12 +114,12 @@ export async function GET(request: NextRequest) {
 
     const stats = {
       total,
-      byRegion: byRegion.map(item => ({
+      byRegion: byRegion.map((item) => ({
         region: item.region,
         count: item._count.region,
       })),
       byMonth: byMonthFormatted,
-      byTimePeriod: byTimePeriod.map(item => ({
+      byTimePeriod: byTimePeriod.map((item) => ({
         timePeriod: item.timePeriod,
         count: item._count.timePeriod,
       })),
@@ -129,7 +129,6 @@ export async function GET(request: NextRequest) {
       complaints,
       stats,
     })
-
   } catch (error) {
     console.error('민원 API 오류:', error)
     return NextResponse.json(

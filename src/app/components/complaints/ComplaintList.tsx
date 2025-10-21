@@ -1,6 +1,6 @@
 'use client'
 
-import { Calendar, MapPin, Clock, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown, Calendar, Clock, MapPin } from 'lucide-react'
 import { useState } from 'react'
 
 interface Complaint {
@@ -33,7 +33,7 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
   // 정렬 함수
   const getSortedComplaints = () => {
     const sorted = [...complaints]
-    
+
     switch (sortBy) {
       case 'newest':
         return sorted.sort((a, b) => new Date(b.receivedDate).getTime() - new Date(a.receivedDate).getTime())
@@ -50,26 +50,30 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
 
   const getSortLabel = (option: SortOption) => {
     switch (option) {
-      case 'newest': return '최신순'
-      case 'oldest': return '오래된순'
-      case 'region': return '지역순'
-      default: return '최신순'
+      case 'newest':
+        return '최신순'
+      case 'oldest':
+        return '오래된순'
+      case 'region':
+        return '지역순'
+      default:
+        return '최신순'
     }
   }
 
   return (
-    <div className="mt-6 rounded-2xl bg-gradient-to-br from-red-50/80 to-orange-50/80 backdrop-blur-sm p-6 shadow-lg border border-red-100/50">
+    <div className="mt-6 rounded-2xl border border-red-100/50 bg-gradient-to-br from-red-50/80 to-orange-50/80 p-6 shadow-lg backdrop-blur-sm">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-bold text-gray-800 mb-2">민원 상세 정보</h3>
+          <h3 className="mb-2 text-xl font-bold text-gray-800">민원 상세 정보</h3>
           <p className="text-gray-600">
             이 위치 주변에 총 <span className="font-bold text-red-600">{totalCount}건</span>의 민원이 있습니다.
           </p>
         </div>
         <button
           onClick={onClose}
-          className="p-2 hover:bg-red-100 rounded-xl transition-colors text-gray-600 hover:text-gray-800"
+          className="rounded-xl p-2 text-gray-600 transition-colors hover:bg-red-100 hover:text-gray-800"
         >
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -78,12 +82,12 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
       </div>
 
       {/* 정렬 버튼들 */}
-      <div className="flex gap-2 mb-4">
+      <div className="mb-4 flex gap-2">
         <button
           onClick={() => setSortBy('newest')}
-          className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 ${
-            sortBy === 'newest' 
-              ? 'bg-red-500 text-white shadow-md' 
+          className={`flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+            sortBy === 'newest'
+              ? 'bg-red-500 text-white shadow-md'
               : 'bg-white/80 text-gray-700 hover:bg-red-50 hover:text-red-600'
           }`}
         >
@@ -92,9 +96,9 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
         </button>
         <button
           onClick={() => setSortBy('oldest')}
-          className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 ${
-            sortBy === 'oldest' 
-              ? 'bg-red-500 text-white shadow-md' 
+          className={`flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+            sortBy === 'oldest'
+              ? 'bg-red-500 text-white shadow-md'
               : 'bg-white/80 text-gray-700 hover:bg-red-50 hover:text-red-600'
           }`}
         >
@@ -103,9 +107,9 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
         </button>
         <button
           onClick={() => setSortBy('region')}
-          className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 ${
-            sortBy === 'region' 
-              ? 'bg-red-500 text-white shadow-md' 
+          className={`flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+            sortBy === 'region'
+              ? 'bg-red-500 text-white shadow-md'
               : 'bg-white/80 text-gray-700 hover:bg-red-50 hover:text-red-600'
           }`}
         >
@@ -115,15 +119,15 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
       </div>
 
       {/* Content */}
-      <div className="space-y-4 max-h-96 overflow-y-auto">
+      <div className="max-h-96 space-y-4 overflow-y-auto">
         {sortedComplaints.map((complaint, index) => (
-          <div 
-            key={complaint.id} 
-            className="bg-white/80 rounded-xl p-4 border border-gray-100/50 hover:shadow-md transition-all duration-200"
+          <div
+            key={complaint.id}
+            className="rounded-xl border border-gray-100/50 bg-white/80 p-4 transition-all duration-200 hover:shadow-md"
           >
-            <div className="flex items-start justify-between mb-3">
+            <div className="mb-3 flex items-start justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-red-600 text-xs font-bold text-white">
                   {index + 1}
                 </div>
                 <span className="text-sm font-medium text-gray-600">민원 #{complaint.id}</span>
@@ -136,9 +140,7 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
 
             {/* 민원 내용 */}
             <div className="mb-3">
-              <p className="text-gray-800 font-medium leading-relaxed">
-                {complaint.content}
-              </p>
+              <p className="leading-relaxed font-medium text-gray-800">{complaint.content}</p>
             </div>
 
             {/* 상세 정보 */}
@@ -147,7 +149,7 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
                 <MapPin className="h-4 w-4 text-red-500" />
                 <span>{complaint.region}</span>
               </div>
-              
+
               {complaint.timePeriod && (
                 <div className="flex items-center gap-1">
                   <Clock className="h-4 w-4 text-blue-500" />
@@ -158,7 +160,7 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
               {complaint.roadAddress && (
                 <div className="flex items-center gap-1">
                   <MapPin className="h-4 w-4 text-green-500" />
-                  <span className="truncate max-w-[200px]" title={complaint.roadAddress}>
+                  <span className="max-w-[200px] truncate" title={complaint.roadAddress}>
                     {complaint.roadAddress}
                   </span>
                 </div>
@@ -167,7 +169,7 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
 
             {/* 주소 정보 */}
             {complaint.landAddress && (
-              <div className="mt-2 text-xs text-gray-500 bg-gray-50/50 rounded-lg p-2">
+              <div className="mt-2 rounded-lg bg-gray-50/50 p-2 text-xs text-gray-500">
                 <span className="font-medium">지번 주소:</span> {complaint.landAddress}
               </div>
             )}
@@ -176,7 +178,7 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
       </div>
 
       {/* Footer */}
-      <div className="mt-4 pt-4 border-t border-gray-200/50">
+      <div className="mt-4 border-t border-gray-200/50 pt-4">
         <div className="flex items-center justify-between text-sm text-gray-600">
           <span>총 {totalCount}건의 민원</span>
           <span>{getSortLabel(sortBy)}으로 정렬</span>
