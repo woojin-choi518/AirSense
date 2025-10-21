@@ -1,11 +1,9 @@
-import { PrismaClient } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('민원 API 호출 시작')
     const { searchParams } = new URL(request.url)
 
     // 쿼리 파라미터 추출
@@ -14,17 +12,32 @@ export async function GET(request: NextRequest) {
     const region = searchParams.get('region')
     const timePeriod = searchParams.get('timePeriod')
 
+    console.log('민원 API 호출 시작:', {
+      startDate,
+      endDate,
+      region,
+      timePeriod,
+    })
+
     // 필터 조건 구성
     const where: any = {
       latitude: { not: null },
       longitude: { not: null },
     }
 
-    // 날짜 범위 필터
+    // 날짜 범위 필터 - 기본값을 최근 한 달로 설정
     if (startDate && endDate) {
       where.receivedDate = {
         gte: new Date(startDate),
         lte: new Date(endDate),
+      }
+    } else {
+      // 날짜 범위가 지정되지 않은 경우 최근 한 달 데이터만 반환
+      const oneMonthAgo = new Date()
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
+      where.receivedDate = {
+        gte: oneMonthAgo,
+        lte: new Date(),
       }
     }
 
@@ -125,17 +138,30 @@ export async function GET(request: NextRequest) {
       })),
     }
 
-    return NextResponse.json({
+    const response = {
       complaints,
       stats,
-    })
+      meta: {
+        totalCount: complaints.length,
+        dateRange: {
+          start: startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          end: endDate || new Date().toISOString().split('T')[0],
+        },
+        filters: {
+          region: region || 'all',
+          timePeriod: timePeriod || 'all',
+        },
+      },
+    }
+
+    console.log(`민원 데이터 조회 완료: ${complaints.length}건, 총 ${total}건 중`)
+
+    return NextResponse.json(response)
   } catch (error) {
     console.error('민원 API 오류:', error)
     return NextResponse.json(
       { error: '민원 데이터를 불러오는 중 오류가 발생했습니다.', detail: (error as Error)?.message || String(error) },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
   }
 }
