@@ -8,9 +8,12 @@
     "dev": "next dev",
     "start": "next start",
     "lint": "npx eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "db": "npx prisma studio",
     "db:sync": "npx prisma db push && npx prisma generate",
-    "db:migrate": "npx prisma migrate dev && npx prisma generate"
+    "db:migrate": "npx prisma migrate dev && npx prisma generate",
+    "upload-complaints": "node scripts/upload-complaints.js"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",
@@ -26,7 +29,7 @@
     "react-dom": "19.1.0",
     "react-responsive": "^10.0.1",
     "react-tsparticles": "^2.12.2",
-    "recharts": "^3.2.1",
+    "recharts": "^3.3.0",
     "tailwind-merge": "^3.3.1",
     "tsparticles": "^3.9.1"
   },
