@@ -2,7 +2,7 @@
 
 import { GoogleMap, Marker } from '@react-google-maps/api'
 import { Calendar, Clock, Filter, MapPin } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import ComplaintList from '@/app/components/complaints/ComplaintList'
 import ComplaintStatsPanel from '@/app/components/complaints/ComplaintStatsPanel'
@@ -45,28 +45,47 @@ interface ComplaintStats {
   byTimePeriod: { timePeriod: string; count: number }[]
 }
 
+interface ApiResponse {
+  complaints: Complaint[]
+  stats: ComplaintStats
+  meta: {
+    totalCount: number
+    dateRange: {
+      start: string
+      end: string
+    }
+    filters: {
+      region: string
+      timePeriod: string
+    }
+  }
+}
+
 export default function ComplaintsPage() {
   const [complaints, setComplaints] = useState<Complaint[]>([])
   const [stats, setStats] = useState<ComplaintStats | null>(null)
   const [loading, setLoading] = useState(true)
-  const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null)
+  const [, setSelectedComplaint] = useState<Complaint | null>(null)
   const [selectedClusterComplaints, setSelectedClusterComplaints] = useState<Complaint[]>([])
   const [showComplaintList, setShowComplaintList] = useState(false)
 
-  // 필터 상태
-  const [dateRange, setDateRange] = useState({
-    start: '2025-01-01',
-    end: '2025-12-31',
-  })
+  // 필터 상태 - 기본값을 최근 한 달로 설정
+  const getDefaultDateRange = () => {
+    const today = new Date()
+    const oneMonthAgo = new Date(today)
+    oneMonthAgo.setMonth(today.getMonth() - 1)
+
+    return {
+      start: oneMonthAgo.toISOString().split('T')[0],
+      end: today.toISOString().split('T')[0],
+    }
+  }
+
+  const [dateRange, setDateRange] = useState(getDefaultDateRange())
   const [selectedRegion, setSelectedRegion] = useState<string>('all')
   const [selectedTimePeriod, setSelectedTimePeriod] = useState<string>('all')
 
-  // 데이터 로드
-  useEffect(() => {
-    loadComplaintsData()
-  }, [dateRange, selectedRegion, selectedTimePeriod])
-
-  const loadComplaintsData = async () => {
+  const loadComplaintsData = useCallback(async () => {
     try {
       setLoading(true)
 
@@ -77,17 +96,37 @@ export default function ComplaintsPage() {
         timePeriod: selectedTimePeriod,
       })
 
+      console.log(`민원 데이터 로딩 중: ${dateRange.start} ~ ${dateRange.end}`)
+
       const response = await fetch(`/api/complaints?${params}`)
-      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data: ApiResponse = await response.json()
 
       setComplaints(data.complaints || [])
       setStats(data.stats || null)
+
+      console.log(`민원 데이터 로딩 완료: ${data.complaints?.length || 0}건`, {
+        dateRange: data.meta?.dateRange,
+        filters: data.meta?.filters,
+      })
     } catch (error) {
       console.error('데이터 로드 오류:', error)
+      // 에러 발생 시 빈 데이터로 설정
+      setComplaints([])
+      setStats(null)
     } finally {
       setLoading(false)
     }
-  }
+  }, [dateRange.start, dateRange.end, selectedRegion, selectedTimePeriod])
+
+  // 데이터 로드
+  useEffect(() => {
+    loadComplaintsData()
+  }, [loadComplaintsData])
 
   const handleMarkerClick = (cluster: { complaints: Complaint[]; count: number }) => {
     // 클러스터의 모든 민원을 설정하고 리스트 모달 표시
@@ -272,7 +311,12 @@ export default function ComplaintsPage() {
 
               {loading ? (
                 <div className="flex h-96 items-center justify-center">
-                  <div className="text-gray-500">데이터를 불러오는 중...</div>
+                  <div className="text-center">
+                    <div className="mb-2 text-gray-500">데이터를 불러오는 중...</div>
+                    <div className="text-sm text-gray-400">
+                      {dateRange.start} ~ {dateRange.end}
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <GoogleMap mapContainerStyle={mapContainerStyle} center={center} zoom={12} options={mapOptions}>
@@ -308,23 +352,42 @@ export default function ComplaintsPage() {
           </div>
 
           {/* Statistics Section */}
-          <ComplaintStatsPanel
-            stats={stats}
-            config={{
-              regionChart: {
-                defaultView: 'chart',
-                showTrend: true,
-                height: 256,
-                maxItems: 5,
-              },
-              monthChart: {
-                defaultView: 'chart',
-                showTrend: true,
-                height: 256,
-              },
-              showTotal: true,
-            }}
-          />
+          <div className="space-y-6">
+            {/* 데이터 범위 정보 */}
+            <div className="rounded-lg bg-white p-4 shadow-md">
+              <h3 className="mb-2 text-lg font-semibold text-gray-800">현재 데이터 범위</h3>
+              <div className="text-sm text-gray-600">
+                <div className="mb-1">
+                  <span className="font-medium">기간:</span> {dateRange.start} ~ {dateRange.end}
+                </div>
+                <div className="mb-1">
+                  <span className="font-medium">지역:</span> {selectedRegion === 'all' ? '전체 지역' : selectedRegion}
+                </div>
+                <div>
+                  <span className="font-medium">시간대:</span>{' '}
+                  {selectedTimePeriod === 'all' ? '전체 시간대' : selectedTimePeriod}
+                </div>
+              </div>
+            </div>
+
+            <ComplaintStatsPanel
+              stats={stats}
+              config={{
+                regionChart: {
+                  defaultView: 'chart',
+                  showTrend: true,
+                  height: 256,
+                  maxItems: 5,
+                },
+                monthChart: {
+                  defaultView: 'chart',
+                  showTrend: true,
+                  height: 256,
+                },
+                showTotal: true,
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>

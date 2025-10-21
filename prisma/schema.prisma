@@ -42,6 +42,9 @@ model Complaint {
   @@index([receivedDate])
   @@index([region])
   @@index([year])
+  @@index([latitude, longitude, receivedDate])
+  @@index([region, receivedDate])
+  @@index([timePeriod, receivedDate])
   @@map("Complaint")
   @@schema("airsense")
 }

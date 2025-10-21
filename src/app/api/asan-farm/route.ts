@@ -1,12 +1,8 @@
-import { PrismaClient } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 
-export const runtime = 'nodejs'
+import { prisma } from '@/lib/prisma'
 
-// Prisma singleton (dev hot-reload 안전)
-const globalForPrisma = global as unknown as { prisma?: PrismaClient }
-const prisma: PrismaClient = globalForPrisma.prisma || new PrismaClient()
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+export const runtime = 'nodejs'
 
 // 바람 방향 계산용 상수
 const typeMultiplier: Record<string, number> = {
@@ -130,9 +126,5 @@ export async function GET(request: NextRequest) {
       { error: 'Failed to fetch livestock farms', detail: error?.message || String(error) },
       { status: 500 }
     )
-  } finally {
-    if (process.env.NODE_ENV === 'production') {
-      await prisma.$disconnect()
-    }
   }
 }
