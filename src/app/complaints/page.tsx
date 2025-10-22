@@ -4,6 +4,7 @@ import { GoogleMap, Marker } from '@react-google-maps/api'
 import { Calendar, Clock, Filter, MapPin } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
+import { FilterPanelSkeleton, MapSkeleton, StatsPanelSkeleton } from '@/app/components/common/Skeleton'
 import ComplaintList from '@/app/components/complaints/ComplaintList'
 import ComplaintStatsPanel from '@/app/components/complaints/ComplaintStatsPanel'
 
@@ -297,101 +298,102 @@ export default function ComplaintsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-emerald-50/30 py-8">
       <div className="mx-auto max-w-7xl px-4">
-        {/* Filter Panel */}
-        <div className="mb-8 rounded-lg bg-white p-6 shadow-md">
-          <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-gray-800">
-            <Filter className="h-5 w-5 text-emerald-600" />
-            범위 설정
-          </h2>
+        {/* Page Header */}
+        <div className="mb-8 text-center">
+          <h1 className="mb-2 text-3xl font-bold text-gray-900">민원 관리 시스템</h1>
+          <p className="text-gray-600">아산시 민원 발생 현황을 확인하고 분석하세요</p>
+        </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {/* 날짜 범위 */}
-            <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">
-                <Calendar className="mr-1 inline h-4 w-4" />
-                날짜 범위
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="date"
-                  value={dateRange.start}
-                  onChange={(e) => setDateRange((prev) => ({ ...prev, start: e.target.value }))}
-                  className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none"
-                />
-                <input
-                  type="date"
-                  value={dateRange.end}
-                  onChange={(e) => setDateRange((prev) => ({ ...prev, end: e.target.value }))}
-                  className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none"
-                />
+        {/* Filter Panel */}
+        {loading ? (
+          <FilterPanelSkeleton />
+        ) : (
+          <div className="mb-8 rounded-xl border border-white/20 bg-white/80 p-6 shadow-lg backdrop-blur-sm">
+            <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-gray-800">
+              <Filter className="h-5 w-5 text-emerald-600" />
+              범위 설정
+            </h2>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              {/* 날짜 범위 */}
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  <Calendar className="mr-1 inline h-4 w-4" />
+                  날짜 범위
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    value={dateRange.start}
+                    onChange={(e) => setDateRange((prev) => ({ ...prev, start: e.target.value }))}
+                    className="flex-1 rounded-lg border border-gray-300 bg-white/50 px-3 py-2 text-sm transition-all duration-200 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:outline-none"
+                  />
+                  <input
+                    type="date"
+                    value={dateRange.end}
+                    onChange={(e) => setDateRange((prev) => ({ ...prev, end: e.target.value }))}
+                    className="flex-1 rounded-lg border border-gray-300 bg-white/50 px-3 py-2 text-sm transition-all duration-200 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* 지역 선택 */}
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  <MapPin className="mr-1 inline h-4 w-4" />
+                  지역
+                </label>
+                <select
+                  value={selectedRegion}
+                  onChange={(e) => setSelectedRegion(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 bg-white/50 px-3 py-2 text-sm transition-all duration-200 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:outline-none"
+                >
+                  <option value="all">전체 지역</option>
+                  {stats?.byRegion?.map((item) => (
+                    <option key={item?.region || 'unknown'} value={item?.region || ''}>
+                      {item?.region || '알 수 없음'} ({item?.count || 0}건)
+                    </option>
+                  )) || <option value="">데이터 없음</option>}
+                </select>
+              </div>
+
+              {/* 시간대 선택 */}
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  <Clock className="mr-1 inline h-4 w-4" />
+                  시간대
+                </label>
+                <select
+                  value={selectedTimePeriod}
+                  onChange={(e) => setSelectedTimePeriod(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 bg-white/50 px-3 py-2 text-sm transition-all duration-200 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:outline-none"
+                >
+                  <option value="all">전체 시간대</option>
+                  {stats?.byTimePeriod?.map((item) => (
+                    <option key={item?.timePeriod || 'unknown'} value={item?.timePeriod || ''}>
+                      {item?.timePeriod || '미분류'} ({item?.count || 0}건)
+                    </option>
+                  )) || <option value="">데이터 없음</option>}
+                </select>
               </div>
             </div>
-
-            {/* 지역 선택 */}
-            <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">
-                <MapPin className="mr-1 inline h-4 w-4" />
-                지역
-              </label>
-              <select
-                value={selectedRegion}
-                onChange={(e) => setSelectedRegion(e.target.value)}
-                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none"
-              >
-                <option value="all">전체 지역</option>
-                {stats?.byRegion?.map((item) => (
-                  <option key={item?.region || 'unknown'} value={item?.region || ''}>
-                    {item?.region || '알 수 없음'} ({item?.count || 0}건)
-                  </option>
-                )) || <option value="">데이터 없음</option>}
-              </select>
-            </div>
-
-            {/* 시간대 선택 */}
-            <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">
-                <Clock className="mr-1 inline h-4 w-4" />
-                시간대
-              </label>
-              <select
-                value={selectedTimePeriod}
-                onChange={(e) => setSelectedTimePeriod(e.target.value)}
-                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none"
-              >
-                <option value="all">전체 시간대</option>
-                {stats?.byTimePeriod?.map((item) => (
-                  <option key={item?.timePeriod || 'unknown'} value={item?.timePeriod || ''}>
-                    {item?.timePeriod || '미분류'} ({item?.count || 0}건)
-                  </option>
-                )) || <option value="">데이터 없음</option>}
-              </select>
-            </div>
           </div>
-        </div>
+        )}
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* Map Section */}
           <div className="lg:col-span-2">
-            <div className="rounded-lg bg-white p-6 shadow-md">
-              <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-gray-800">
-                <MapPin className="h-5 w-5 text-emerald-600" />
-                민원 발생 위치
-              </h2>
-
-              {loading ? (
-                <div className="flex h-96 items-center justify-center">
-                  <div className="text-center">
-                    <div className="mb-2 text-gray-500">데이터를 불러오는 중...</div>
-                    <div className="text-sm text-gray-400">
-                      {dateRange.start} ~ {dateRange.end}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  {/* 데이터 표시 상태 */}
+            {loading ? (
+              <MapSkeleton />
+            ) : (
+              <div className="rounded-xl border border-white/20 bg-white/80 p-6 shadow-lg backdrop-blur-sm">
+                <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-gray-800">
+                  <MapPin className="h-5 w-5 text-emerald-600" />
+                  민원 발생 위치
+                </h2>
+                <div className="overflow-hidden rounded-lg shadow-lg">
                   <GoogleMap mapContainerStyle={mapContainerStyle} center={center} zoom={12} options={mapOptions}>
                     {createClusteredMarkers(
                       filteredComplaints.filter((complaint) => complaint.lat && complaint.lng)
@@ -413,37 +415,41 @@ export default function ComplaintsPage() {
                     ))}
                   </GoogleMap>
                 </div>
-              )}
 
-              {/* 민원 리스트 인라인 표시 */}
-              <ComplaintList
-                complaints={selectedClusterComplaints}
-                totalCount={selectedClusterComplaints.length}
-                onClose={handleCloseComplaintList}
-                isVisible={showComplaintList}
-              />
-            </div>
+                {/* 민원 리스트 인라인 표시 */}
+                <ComplaintList
+                  complaints={selectedClusterComplaints}
+                  totalCount={selectedClusterComplaints.length}
+                  onClose={handleCloseComplaintList}
+                  isVisible={showComplaintList}
+                />
+              </div>
+            )}
           </div>
 
           {/* Statistics Section */}
           <div className="space-y-6">
-            <ComplaintStatsPanel
-              stats={stats}
-              config={{
-                regionChart: {
-                  defaultView: 'chart',
-                  showTrend: true,
-                  height: 256,
-                  maxItems: 5,
-                },
-                monthChart: {
-                  defaultView: 'chart',
-                  showTrend: true,
-                  height: 256,
-                },
-                showTotal: true,
-              }}
-            />
+            {loading ? (
+              <StatsPanelSkeleton />
+            ) : (
+              <ComplaintStatsPanel
+                stats={stats}
+                config={{
+                  regionChart: {
+                    defaultView: 'chart',
+                    showTrend: true,
+                    height: 256,
+                    maxItems: 5,
+                  },
+                  monthChart: {
+                    defaultView: 'chart',
+                    showTrend: true,
+                    height: 256,
+                  },
+                  showTotal: true,
+                }}
+              />
+            )}
           </div>
         </div>
       </div>

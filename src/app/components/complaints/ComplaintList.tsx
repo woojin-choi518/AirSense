@@ -3,6 +3,8 @@
 import { ArrowDown, ArrowUp, ArrowUpDown, Calendar, ChevronLeft, ChevronRight, Clock, MapPin } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
+import { ComplaintListSkeleton } from '@/app/components/common/Skeleton'
+
 interface Complaint {
   id: number
   date: string
@@ -89,6 +91,11 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
   }, [currentPage, isVisible, complaints.length, loadComplaintsContent])
 
   if (!isVisible || complaints.length === 0) return null
+
+  // 로딩 중일 때 스켈레톤 표시
+  if (loading && complaintsWithContent.length === 0) {
+    return <ComplaintListSkeleton />
+  }
 
   // 정렬 함수
   const getSortedComplaints = () => {
@@ -180,7 +187,7 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
 
       {/* Content */}
       <div className="max-h-96 space-y-4 overflow-y-auto">
-        {loading ? (
+        {loading && complaintsWithContent.length > 0 ? (
           <div className="flex items-center justify-center py-8">
             <div className="text-center">
               <div className="mb-2 text-gray-500">민원 내용을 불러오는 중...</div>
