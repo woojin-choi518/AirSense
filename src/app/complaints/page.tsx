@@ -45,24 +45,9 @@ interface ComplaintStats {
   byTimePeriod: { timePeriod: string; count: number }[]
 }
 
-interface ApiResponse {
-  complaints: Complaint[]
-  stats: ComplaintStats
-  meta: {
-    totalCount: number
-    dateRange: {
-      start: string
-      end: string
-    }
-    filters: {
-      region: string
-      timePeriod: string
-    }
-  }
-}
-
 export default function ComplaintsPage() {
-  const [complaints, setComplaints] = useState<Complaint[]>([])
+  const [allComplaints, setAllComplaints] = useState<Complaint[]>([])
+  const [filteredComplaints, setFilteredComplaints] = useState<Complaint[]>([])
   const [stats, setStats] = useState<ComplaintStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [, setSelectedComplaint] = useState<Complaint | null>(null)
@@ -77,48 +62,114 @@ export default function ComplaintsPage() {
   const [selectedRegion, setSelectedRegion] = useState<string>('all')
   const [selectedTimePeriod, setSelectedTimePeriod] = useState<string>('all')
 
-  const loadComplaintsData = useCallback(async () => {
+  // 전체 데이터를 한 번만 로드
+  const loadAllComplaintsData = useCallback(async () => {
     try {
       setLoading(true)
+      console.log('전체 민원 데이터 로딩 중...')
 
-      const params = new URLSearchParams({
-        startDate: dateRange.start,
-        endDate: dateRange.end,
-        region: selectedRegion,
-        timePeriod: selectedTimePeriod,
-      })
-
-      console.log(`민원 데이터 로딩 중: ${dateRange.start} ~ ${dateRange.end}`)
-
-      const response = await fetch(`/api/complaints?${params}`)
+      const response = await fetch('/api/complaints')
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      const data: ApiResponse = await response.json()
+      const data = await response.json()
 
-      setComplaints(data.complaints || [])
-      setStats(data.stats || null)
-
-      console.log(`민원 데이터 로딩 완료: ${data.complaints?.length || 0}건`, {
-        dateRange: data.meta?.dateRange,
-        filters: data.meta?.filters,
-      })
+      setAllComplaints(data.complaints || [])
+      console.log(`전체 민원 데이터 로딩 완료: ${data.complaints?.length || 0}건`)
     } catch (error) {
       console.error('데이터 로드 오류:', error)
-      // 에러 발생 시 빈 데이터로 설정
-      setComplaints([])
-      setStats(null)
+      setAllComplaints([])
     } finally {
       setLoading(false)
     }
-  }, [dateRange.start, dateRange.end, selectedRegion, selectedTimePeriod])
+  }, [])
 
-  // 데이터 로드
+  // 클라이언트 사이드 필터링
+  const applyFilters = useCallback(() => {
+    if (allComplaints.length === 0) return
+
+    const filtered = allComplaints.filter((complaint) => {
+      // 날짜 필터
+      const complaintDate = new Date(complaint.receivedDate)
+      const startDate = new Date(dateRange.start)
+      const endDate = new Date(dateRange.end)
+
+      if (complaintDate < startDate || complaintDate > endDate) {
+        return false
+      }
+
+      // 지역 필터
+      if (selectedRegion !== 'all' && complaint.region !== selectedRegion) {
+        return false
+      }
+
+      // 시간대 필터
+      if (selectedTimePeriod !== 'all' && complaint.timePeriod !== selectedTimePeriod) {
+        return false
+      }
+
+      return true
+    })
+
+    setFilteredComplaints(filtered)
+
+    // 통계 계산
+    const stats: ComplaintStats = {
+      total: filtered.length,
+      byRegion: getRegionStats(filtered),
+      byMonth: getMonthStats(filtered),
+      byTimePeriod: getTimePeriodStats(filtered),
+    }
+
+    setStats(stats)
+    console.log(`필터링 완료: ${filtered.length}건`)
+  }, [allComplaints, dateRange, selectedRegion, selectedTimePeriod])
+
+  // 통계 계산 함수들
+  const getRegionStats = (complaints: Complaint[]) => {
+    const regionCounts: { [key: string]: number } = {}
+    complaints.forEach((complaint) => {
+      const region = complaint.region || '미분류'
+      regionCounts[region] = (regionCounts[region] || 0) + 1
+    })
+    return Object.entries(regionCounts)
+      .map(([region, count]) => ({ region, count }))
+      .sort((a, b) => b.count - a.count)
+  }
+
+  const getMonthStats = (complaints: Complaint[]) => {
+    const monthCounts: { [key: string]: number } = {}
+    complaints.forEach((complaint) => {
+      const month = (new Date(complaint.receivedDate).getMonth() + 1).toString()
+      monthCounts[month] = (monthCounts[month] || 0) + 1
+    })
+    return Object.entries(monthCounts)
+      .map(([month, count]) => ({ month, count }))
+      .sort((a, b) => parseInt(a.month) - parseInt(b.month))
+  }
+
+  const getTimePeriodStats = (complaints: Complaint[]) => {
+    const timePeriodCounts: { [key: string]: number } = {}
+    complaints.forEach((complaint) => {
+      const timePeriod = complaint.timePeriod || '미분류'
+      timePeriodCounts[timePeriod] = (timePeriodCounts[timePeriod] || 0) + 1
+    })
+    return Object.entries(timePeriodCounts)
+      .map(([timePeriod, count]) => ({ timePeriod, count }))
+      .sort((a, b) => b.count - a.count)
+  }
+
+  // 초기 데이터 로드
   useEffect(() => {
-    loadComplaintsData()
-  }, [loadComplaintsData])
+    loadAllComplaintsData()
+  }, [loadAllComplaintsData])
+
+  // 필터 변경 시 즉시 적용
+  useEffect(() => {
+    applyFilters()
+  }, [applyFilters])
 
   const handleMarkerClick = (cluster: { complaints: Complaint[]; count: number }) => {
     // 클러스터의 모든 민원을 설정하고 리스트 모달 표시
@@ -313,7 +364,7 @@ export default function ComplaintsPage() {
               ) : (
                 <GoogleMap mapContainerStyle={mapContainerStyle} center={center} zoom={12} options={mapOptions}>
                   {createClusteredMarkers(
-                    complaints.filter((complaint) => complaint.latitude && complaint.longitude)
+                    filteredComplaints.filter((complaint) => complaint.latitude && complaint.longitude)
                   ).map((cluster, index) => (
                     <Marker
                       key={`cluster-${index}`}
