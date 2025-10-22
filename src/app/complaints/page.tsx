@@ -69,19 +69,11 @@ export default function ComplaintsPage() {
   const [selectedClusterComplaints, setSelectedClusterComplaints] = useState<Complaint[]>([])
   const [showComplaintList, setShowComplaintList] = useState(false)
 
-  // 필터 상태 - 기본값을 최근 한 달로 설정
-  const getDefaultDateRange = () => {
-    const today = new Date()
-    const oneMonthAgo = new Date(today)
-    oneMonthAgo.setMonth(today.getMonth() - 1)
-
-    return {
-      start: oneMonthAgo.toISOString().split('T')[0],
-      end: today.toISOString().split('T')[0],
-    }
-  }
-
-  const [dateRange, setDateRange] = useState(getDefaultDateRange())
+  // 필터 상태
+  const [dateRange, setDateRange] = useState({
+    start: '2025-01-01',
+    end: '2025-12-31',
+  })
   const [selectedRegion, setSelectedRegion] = useState<string>('all')
   const [selectedTimePeriod, setSelectedTimePeriod] = useState<string>('all')
 
