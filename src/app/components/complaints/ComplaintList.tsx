@@ -5,15 +5,11 @@ import { useState } from 'react'
 
 interface Complaint {
   id: number
-  receivedDate: string
-  content: string
+  date: string
   region: string
-  year: number
-  timePeriod: string | null
-  latitude: number | null
-  longitude: number | null
-  roadAddress: string | null
-  landAddress: string | null
+  lat: number | null
+  lng: number | null
+  period: string | null
 }
 
 interface ComplaintListProps {
@@ -36,9 +32,9 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
 
     switch (sortBy) {
       case 'newest':
-        return sorted.sort((a, b) => new Date(b.receivedDate).getTime() - new Date(a.receivedDate).getTime())
+        return sorted.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       case 'oldest':
-        return sorted.sort((a, b) => new Date(a.receivedDate).getTime() - new Date(b.receivedDate).getTime())
+        return sorted.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       case 'region':
         return sorted.sort((a, b) => a.region.localeCompare(b.region))
       default:
@@ -134,13 +130,15 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
               </div>
               <div className="flex items-center gap-1 text-xs text-gray-500">
                 <Calendar className="h-3 w-3" />
-                {new Date(complaint.receivedDate).toLocaleDateString('ko-KR')}
+                {new Date(complaint.date).toLocaleDateString('ko-KR')}
               </div>
             </div>
 
             {/* 민원 내용 */}
             <div className="mb-3">
-              <p className="leading-relaxed font-medium text-gray-800">{complaint.content}</p>
+              <p className="leading-relaxed font-medium text-gray-800">
+                민원 #{complaint.id} - {complaint.region}
+              </p>
             </div>
 
             {/* 상세 정보 */}
@@ -149,30 +147,13 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
                 <MapPin className="h-4 w-4 text-red-500" />
                 <span>{complaint.region}</span>
               </div>
-
-              {complaint.timePeriod && (
+              {complaint.period && (
                 <div className="flex items-center gap-1">
                   <Clock className="h-4 w-4 text-blue-500" />
-                  <span>{complaint.timePeriod}</span>
-                </div>
-              )}
-
-              {complaint.roadAddress && (
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-4 w-4 text-green-500" />
-                  <span className="max-w-[200px] truncate" title={complaint.roadAddress}>
-                    {complaint.roadAddress}
-                  </span>
+                  <span>{complaint.period}</span>
                 </div>
               )}
             </div>
-
-            {/* 주소 정보 */}
-            {complaint.landAddress && (
-              <div className="mt-2 rounded-lg bg-gray-50/50 p-2 text-xs text-gray-500">
-                <span className="font-medium">지번 주소:</span> {complaint.landAddress}
-              </div>
-            )}
           </div>
         ))}
       </div>
