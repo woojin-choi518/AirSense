@@ -27,15 +27,11 @@ const mapOptions = {
 
 interface Complaint {
   id: number
-  receivedDate: string
-  content: string
+  date: string
   region: string
-  year: number
-  timePeriod: string | null
-  latitude: number | null
-  longitude: number | null
-  roadAddress: string | null
-  landAddress: string | null
+  lat: number | null
+  lng: number | null
+  period: string | null
 }
 
 interface ComplaintStats {
@@ -62,29 +58,36 @@ export default function ComplaintsPage() {
   const [selectedRegion, setSelectedRegion] = useState<string>('all')
   const [selectedTimePeriod, setSelectedTimePeriod] = useState<string>('all')
 
-  // 전체 데이터를 한 번만 로드
-  const loadAllComplaintsData = useCallback(async () => {
+  // 모든 데이터를 한 번만 로드 (필터 없이)
+  const loadComplaintsData = useCallback(async () => {
     try {
       setLoading(true)
-      console.log('전체 민원 데이터 로딩 중...')
+      setAllComplaints([])
 
-      const response = await fetch('/api/complaints')
+      console.log('민원 데이터 로딩 시작...')
 
+      // 모든 데이터를 한 번에 로드 (필터 없이)
+      const params = new URLSearchParams({
+        page: '1',
+        limit: '5000', // 한 번에 최대 5000개
+      })
+
+      const response = await fetch(`/api/complaints?${params}`)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
       const data = await response.json()
-
       setAllComplaints(data.complaints || [])
-      console.log(`전체 민원 데이터 로딩 완료: ${data.complaints?.length || 0}건`)
+
+      console.log(`모든 데이터 로딩 완료: ${data.complaints?.length || 0}건`)
     } catch (error) {
       console.error('데이터 로드 오류:', error)
       setAllComplaints([])
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, []) // 의존성 배열을 비워서 한 번만 로드
 
   // 클라이언트 사이드 필터링
   const applyFilters = useCallback(() => {
@@ -92,7 +95,7 @@ export default function ComplaintsPage() {
 
     const filtered = allComplaints.filter((complaint) => {
       // 날짜 필터
-      const complaintDate = new Date(complaint.receivedDate)
+      const complaintDate = new Date(complaint.date)
       const startDate = new Date(dateRange.start)
       const endDate = new Date(dateRange.end)
 
@@ -106,7 +109,7 @@ export default function ComplaintsPage() {
       }
 
       // 시간대 필터
-      if (selectedTimePeriod !== 'all' && complaint.timePeriod !== selectedTimePeriod) {
+      if (selectedTimePeriod !== 'all' && complaint.period !== selectedTimePeriod) {
         return false
       }
 
@@ -142,7 +145,7 @@ export default function ComplaintsPage() {
   const getMonthStats = (complaints: Complaint[]) => {
     const monthCounts: { [key: string]: number } = {}
     complaints.forEach((complaint) => {
-      const month = (new Date(complaint.receivedDate).getMonth() + 1).toString()
+      const month = (new Date(complaint.date).getMonth() + 1).toString()
       monthCounts[month] = (monthCounts[month] || 0) + 1
     })
     return Object.entries(monthCounts)
@@ -153,7 +156,7 @@ export default function ComplaintsPage() {
   const getTimePeriodStats = (complaints: Complaint[]) => {
     const timePeriodCounts: { [key: string]: number } = {}
     complaints.forEach((complaint) => {
-      const timePeriod = complaint.timePeriod || '미분류'
+      const timePeriod = complaint.period || '미분류'
       timePeriodCounts[timePeriod] = (timePeriodCounts[timePeriod] || 0) + 1
     })
     return Object.entries(timePeriodCounts)
@@ -161,12 +164,12 @@ export default function ComplaintsPage() {
       .sort((a, b) => b.count - a.count)
   }
 
-  // 초기 데이터 로드
+  // 초기 데이터 로드 (한 번만)
   useEffect(() => {
-    loadAllComplaintsData()
-  }, [loadAllComplaintsData])
+    loadComplaintsData()
+  }, [loadComplaintsData])
 
-  // 필터 변경 시 즉시 적용
+  // 필터 변경 시 클라이언트 사이드 필터링 적용
   useEffect(() => {
     applyFilters()
   }, [applyFilters])
@@ -178,7 +181,7 @@ export default function ComplaintsPage() {
 
     // 가장 최근 민원을 선택된 민원으로 설정 (기존 기능 유지)
     const latestComplaint = cluster.complaints.sort(
-      (a, b) => new Date(b.receivedDate).getTime() - new Date(a.receivedDate).getTime()
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     )[0]
     setSelectedComplaint(latestComplaint)
   }
@@ -200,7 +203,7 @@ export default function ComplaintsPage() {
     return R * c
   }
 
-  // 클러스터링된 마커 데이터 생성
+  // 효율적인 클러스터링 알고리즘 (공간 해시 사용)
   const createClusteredMarkers = (complaints: Complaint[]) => {
     const clusteredMarkers: Array<{
       position: { lat: number; lng: number }
@@ -209,49 +212,74 @@ export default function ComplaintsPage() {
       region: string
     }> = []
 
+    // 유효한 좌표가 있는 민원만 필터링
+    const validComplaints = complaints.filter((c) => c.lat && c.lng)
+
+    if (validComplaints.length === 0) return clusteredMarkers
+
+    // 공간 해시 맵 생성 (100m 격자)
+    const gridSize = 0.001 // 약 100m에 해당하는 위도/경도 차이
+    const spatialHash = new Map<string, Complaint[]>()
+
+    // 각 민원을 격자에 배치
+    validComplaints.forEach((complaint) => {
+      const gridKey = `${Math.floor(complaint.lat! / gridSize)},${Math.floor(complaint.lng! / gridSize)}`
+
+      if (!spatialHash.has(gridKey)) {
+        spatialHash.set(gridKey, [])
+      }
+      spatialHash.get(gridKey)!.push(complaint)
+    })
+
     const processed = new Set<number>()
 
-    complaints.forEach((complaint) => {
-      if (processed.has(complaint.id) || !complaint.latitude || !complaint.longitude) {
-        return
-      }
+    // 각 격자에서 클러스터링 수행
+    spatialHash.forEach((gridComplaints) => {
+      gridComplaints.forEach((complaint) => {
+        if (processed.has(complaint.id)) return
 
-      const cluster: Complaint[] = [complaint]
-      processed.add(complaint.id)
+        const cluster: Complaint[] = [complaint]
+        processed.add(complaint.id)
 
-      // 반경 100m 내의 다른 민원들 찾기
-      complaints.forEach((otherComplaint) => {
-        if (
-          processed.has(otherComplaint.id) ||
-          !otherComplaint.latitude ||
-          !otherComplaint.longitude ||
-          otherComplaint.id === complaint.id
-        ) {
-          return
+        // 인접 격자들도 확인 (3x3 격자)
+        const baseGridX = Math.floor(complaint.lat! / gridSize)
+        const baseGridY = Math.floor(complaint.lng! / gridSize)
+
+        for (let dx = -1; dx <= 1; dx++) {
+          for (let dy = -1; dy <= 1; dy++) {
+            const neighborKey = `${baseGridX + dx},${baseGridY + dy}`
+            const neighborComplaints = spatialHash.get(neighborKey) || []
+
+            neighborComplaints.forEach((otherComplaint) => {
+              if (processed.has(otherComplaint.id) || otherComplaint.id === complaint.id) {
+                return
+              }
+
+              const distance = calculateDistance(
+                complaint.lat!,
+                complaint.lng!,
+                otherComplaint.lat!,
+                otherComplaint.lng!
+              )
+
+              if (distance <= 100) {
+                cluster.push(otherComplaint)
+                processed.add(otherComplaint.id)
+              }
+            })
+          }
         }
 
-        const distance = calculateDistance(
-          complaint.latitude!,
-          complaint.longitude!,
-          otherComplaint.latitude!,
-          otherComplaint.longitude!
-        )
+        // 클러스터의 중심점 계산
+        const avgLat = cluster.reduce((sum, c) => sum + c.lat!, 0) / cluster.length
+        const avgLng = cluster.reduce((sum, c) => sum + c.lng!, 0) / cluster.length
 
-        if (distance <= 100) {
-          cluster.push(otherComplaint)
-          processed.add(otherComplaint.id)
-        }
-      })
-
-      // 클러스터의 중심점 계산
-      const avgLat = cluster.reduce((sum, c) => sum + c.latitude!, 0) / cluster.length
-      const avgLng = cluster.reduce((sum, c) => sum + c.longitude!, 0) / cluster.length
-
-      clusteredMarkers.push({
-        position: { lat: avgLat, lng: avgLng },
-        count: cluster.length,
-        complaints: cluster,
-        region: complaint.region,
+        clusteredMarkers.push({
+          position: { lat: avgLat, lng: avgLng },
+          count: cluster.length,
+          complaints: cluster,
+          region: complaint.region,
+        })
       })
     })
 
@@ -362,26 +390,29 @@ export default function ComplaintsPage() {
                   </div>
                 </div>
               ) : (
-                <GoogleMap mapContainerStyle={mapContainerStyle} center={center} zoom={12} options={mapOptions}>
-                  {createClusteredMarkers(
-                    filteredComplaints.filter((complaint) => complaint.latitude && complaint.longitude)
-                  ).map((cluster, index) => (
-                    <Marker
-                      key={`cluster-${index}`}
-                      position={cluster.position}
-                      title={`${cluster.count}건의 민원`}
-                      onClick={() => handleMarkerClick(cluster)}
-                      icon={{
-                        path: google.maps.SymbolPath.CIRCLE,
-                        scale: getMarkerScale(cluster.count),
-                        fillColor: '#e34343',
-                        fillOpacity: 0.8,
-                        strokeWeight: 0,
-                      }}
-                      label={cluster.count > 1 ? cluster.count.toString() : ''}
-                    />
-                  ))}
-                </GoogleMap>
+                <div>
+                  {/* 데이터 표시 상태 */}
+                  <GoogleMap mapContainerStyle={mapContainerStyle} center={center} zoom={12} options={mapOptions}>
+                    {createClusteredMarkers(
+                      filteredComplaints.filter((complaint) => complaint.lat && complaint.lng)
+                    ).map((cluster, index) => (
+                      <Marker
+                        key={`cluster-${index}`}
+                        position={cluster.position}
+                        title={`${cluster.count}건의 민원`}
+                        onClick={() => handleMarkerClick(cluster)}
+                        icon={{
+                          path: google.maps.SymbolPath.CIRCLE,
+                          scale: getMarkerScale(cluster.count),
+                          fillColor: '#e34343',
+                          fillOpacity: 0.8,
+                          strokeWeight: 0,
+                        }}
+                        label={cluster.count > 1 ? cluster.count.toString() : ''}
+                      />
+                    ))}
+                  </GoogleMap>
+                </div>
               )}
 
               {/* 민원 리스트 인라인 표시 */}
@@ -396,23 +427,6 @@ export default function ComplaintsPage() {
 
           {/* Statistics Section */}
           <div className="space-y-6">
-            {/* 데이터 범위 정보 */}
-            <div className="rounded-lg bg-white p-4 shadow-md">
-              <h3 className="mb-2 text-lg font-semibold text-gray-800">현재 데이터 범위</h3>
-              <div className="text-sm text-gray-600">
-                <div className="mb-1">
-                  <span className="font-medium">기간:</span> {dateRange.start} ~ {dateRange.end}
-                </div>
-                <div className="mb-1">
-                  <span className="font-medium">지역:</span> {selectedRegion === 'all' ? '전체 지역' : selectedRegion}
-                </div>
-                <div>
-                  <span className="font-medium">시간대:</span>{' '}
-                  {selectedTimePeriod === 'all' ? '전체 시간대' : selectedTimePeriod}
-                </div>
-              </div>
-            </div>
-
             <ComplaintStatsPanel
               stats={stats}
               config={{
