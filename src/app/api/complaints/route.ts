@@ -1,201 +1,156 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
 import { prisma } from '@/lib/prisma'
 
-export async function GET(request: NextRequest) {
+// 간단한 메모리 캐시 (프로덕션에서는 Redis 사용 권장)
+interface CacheData {
+  complaints: Array<{
+    id: number
+    date: string
+    region: string | null
+    lat: number | null
+    lng: number | null
+    period: string | null
+  }>
+  totalCount: number
+  page: number
+  limit: number
+  hasMore: boolean
+}
+
+const cache = new Map<string, { data: CacheData; timestamp: number }>()
+const CACHE_TTL = 5 * 60 * 1000 // 5분
+
+function getCacheKey(params: URLSearchParams): string {
+  return Array.from(params.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}=${value}`)
+    .join('&')
+}
+
+function getCachedData(key: string): CacheData | null {
+  const cached = cache.get(key)
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data
+  }
+  cache.delete(key)
+  return null
+}
+
+function setCachedData(key: string, data: CacheData) {
+  cache.set(key, { data, timestamp: Date.now() })
+
+  // 캐시 크기 제한 (최대 100개 항목)
+  if (cache.size > 100) {
+    const oldestKey = cache.keys().next().value
+    if (oldestKey) {
+      cache.delete(oldestKey)
+    }
+  }
+}
+
+export async function GET(request: Request) {
   try {
+    const startTime = Date.now()
     const { searchParams } = new URL(request.url)
 
-    // 쿼리 파라미터 추출
+    // 캐시 키 생성
+    const cacheKey = getCacheKey(searchParams)
+
+    // 캐시에서 데이터 확인
+    const cachedData = getCachedData(cacheKey)
+    if (cachedData) {
+      console.log(`민원 API 캐시 히트 - 소요시간: ${Date.now() - startTime}ms`)
+      return NextResponse.json(cachedData)
+    }
+
+    // 쿼리 파라미터 파싱
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '5000') // 한 번에 최대 5000개까지
+    const region = searchParams.get('region')
     const startDate = searchParams.get('startDate')
     const endDate = searchParams.get('endDate')
-    const region = searchParams.get('region')
     const timePeriod = searchParams.get('timePeriod')
 
-    const startTime = Date.now()
-    console.log('민원 API 호출 시작:', {
-      startDate,
-      endDate,
-      region,
-      timePeriod,
-    })
+    console.log(`민원 API 호출 시작 - 페이지: ${page}, 제한: ${limit}`)
 
-    // 필터 조건 구성
-    const where: any = {
+    // 동적 where 조건 구성
+    const where: {
+      latitude: { not: null }
+      longitude: { not: null }
+      region?: string
+      receivedDate?: { gte: Date; lte: Date }
+      timePeriod?: string
+    } = {
       latitude: { not: null },
       longitude: { not: null },
     }
 
-    // 날짜 범위 필터 - 기본값을 최근 한 달로 설정
+    // 필터 조건 추가
+    if (region && region !== 'all') {
+      where.region = region
+    }
+
     if (startDate && endDate) {
       where.receivedDate = {
         gte: new Date(startDate),
         lte: new Date(endDate),
       }
-    } else {
-      // 날짜 범위가 지정되지 않은 경우 최근 한 달 데이터만 반환
-      const oneMonthAgo = new Date()
-      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
-      where.receivedDate = {
-        gte: oneMonthAgo,
-        lte: new Date(),
-      }
     }
 
-    // 지역 필터
-    if (region && region !== 'all') {
-      where.region = region
-    }
-
-    // 시간대 필터
     if (timePeriod && timePeriod !== 'all') {
       where.timePeriod = timePeriod
     }
 
-    // 모든 쿼리를 병렬로 실행하여 성능 최적화
-    const parallelStartTime = Date.now()
-    const [complaints, total, byRegion, byTimePeriod] = await Promise.all([
-      // 민원 데이터 조회
+    // 페이지네이션을 위한 skip 계산
+    const skip = (page - 1) * limit
+
+    // 병렬로 데이터와 총 개수 조회
+    const [complaints, totalCount] = await Promise.all([
       prisma.complaint.findMany({
         where,
         select: {
           id: true,
           receivedDate: true,
-          content: true,
           region: true,
           latitude: true,
           longitude: true,
-          roadAddress: true,
-          landAddress: true,
           timePeriod: true,
         },
         orderBy: {
           receivedDate: 'desc',
         },
-        take: 1000, // 성능을 위해 최대 1000개로 제한
+        skip,
+        take: limit,
       }),
-
-      // 전체 개수 조회
       prisma.complaint.count({ where }),
-
-      // 지역별 통계
-      prisma.complaint.groupBy({
-        by: ['region'],
-        where,
-        _count: {
-          region: true,
-        },
-        orderBy: {
-          _count: {
-            region: 'desc',
-          },
-        },
-      }),
-
-      // 시간대별 통계
-      prisma.complaint.groupBy({
-        by: ['timePeriod'],
-        where,
-        _count: {
-          timePeriod: true,
-        },
-        orderBy: {
-          _count: {
-            timePeriod: 'desc',
-          },
-        },
-      }),
     ])
-    const parallelEndTime = Date.now()
-    console.log(`병렬 쿼리 완료: ${parallelEndTime - parallelStartTime}ms, 민원 데이터: ${complaints.length}개`)
 
-    // 월별 통계를 DB 레벨에서 최적화된 쿼리로 처리
-    const monthlyStatsStartTime = Date.now()
-    let byMonthRaw: Array<{ month: number; count: bigint }>
-
-    if (region && region !== 'all' && timePeriod && timePeriod !== 'all') {
-      byMonthRaw = await prisma.$queryRaw`
-        SELECT EXTRACT(MONTH FROM received_date) as month, COUNT(*) as count
-        FROM "airsense"."Complaint" 
-        WHERE received_date >= ${where.receivedDate.gte} AND received_date <= ${where.receivedDate.lte}
-          AND latitude IS NOT NULL AND longitude IS NOT NULL
-          AND region = ${region} AND time_period = ${timePeriod}
-        GROUP BY EXTRACT(MONTH FROM received_date)
-        ORDER BY month
-      `
-    } else if (region && region !== 'all') {
-      byMonthRaw = await prisma.$queryRaw`
-        SELECT EXTRACT(MONTH FROM received_date) as month, COUNT(*) as count
-        FROM "airsense"."Complaint" 
-        WHERE received_date >= ${where.receivedDate.gte} AND received_date <= ${where.receivedDate.lte}
-          AND latitude IS NOT NULL AND longitude IS NOT NULL
-          AND region = ${region}
-        GROUP BY EXTRACT(MONTH FROM received_date)
-        ORDER BY month
-      `
-    } else if (timePeriod && timePeriod !== 'all') {
-      byMonthRaw = await prisma.$queryRaw`
-        SELECT EXTRACT(MONTH FROM received_date) as month, COUNT(*) as count
-        FROM "airsense"."Complaint" 
-        WHERE received_date >= ${where.receivedDate.gte} AND received_date <= ${where.receivedDate.lte}
-          AND latitude IS NOT NULL AND longitude IS NOT NULL
-          AND time_period = ${timePeriod}
-        GROUP BY EXTRACT(MONTH FROM received_date)
-        ORDER BY month
-      `
-    } else {
-      byMonthRaw = await prisma.$queryRaw`
-        SELECT EXTRACT(MONTH FROM received_date) as month, COUNT(*) as count
-        FROM "airsense"."Complaint" 
-        WHERE received_date >= ${where.receivedDate.gte} AND received_date <= ${where.receivedDate.lte}
-          AND latitude IS NOT NULL AND longitude IS NOT NULL
-        GROUP BY EXTRACT(MONTH FROM received_date)
-        ORDER BY month
-      `
-    }
-
-    // 월별 통계 포맷팅
-    const byMonthFormatted = byMonthRaw.map((item) => ({
-      month: item.month.toString(),
-      count: Number(item.count),
+    // 데이터 크기 최적화를 위해 최소 필드만 반환
+    const optimizedComplaints = complaints.map((complaint) => ({
+      id: complaint.id,
+      date: complaint.receivedDate.toISOString().split('T')[0], // 날짜만 (시간 제거)
+      region: complaint.region,
+      lat: complaint.latitude,
+      lng: complaint.longitude,
+      period: complaint.timePeriod,
     }))
-    const monthlyStatsEndTime = Date.now()
-    console.log(`월별 통계 쿼리 완료: ${monthlyStatsEndTime - monthlyStatsStartTime}ms`)
 
-    const stats = {
-      total,
-      byRegion: byRegion.map((item) => ({
-        region: item.region,
-        count: item._count.region,
-      })),
-      byMonth: byMonthFormatted,
-      byTimePeriod: byTimePeriod.map((item) => ({
-        timePeriod: item.timePeriod,
-        count: item._count.timePeriod,
-      })),
+    const endTime = Date.now()
+    console.log(`민원 데이터 조회 완료: ${complaints.length}개/${totalCount}개, 소요시간: ${endTime - startTime}ms`)
+
+    const responseData = {
+      complaints: optimizedComplaints,
+      totalCount,
+      page,
+      limit,
+      hasMore: skip + complaints.length < totalCount,
     }
 
-    const response = {
-      complaints,
-      stats,
-      meta: {
-        totalCount: complaints.length,
-        dateRange: {
-          start: startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          end: endDate || new Date().toISOString().split('T')[0],
-        },
-        filters: {
-          region: region || 'all',
-          timePeriod: timePeriod || 'all',
-        },
-      },
-    }
+    // 캐시에 저장
+    setCachedData(cacheKey, responseData)
 
-    console.log(`민원 데이터 조회 완료: ${complaints.length}건, 총 ${total}건 중`)
-    const totalTime = Date.now() - startTime
-    console.log(`전체 API 응답 시간: ${totalTime}ms`)
-
-    return NextResponse.json(response)
+    return NextResponse.json(responseData)
   } catch (error) {
     console.error('민원 API 오류:', error)
     return NextResponse.json(

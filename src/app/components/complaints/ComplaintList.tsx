@@ -1,19 +1,21 @@
 'use client'
 
-import { ArrowDown, ArrowUp, ArrowUpDown, Calendar, Clock, MapPin } from 'lucide-react'
-import { useState } from 'react'
+import { ArrowDown, ArrowUp, ArrowUpDown, Calendar, ChevronLeft, ChevronRight, Clock, MapPin } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
 
 interface Complaint {
   id: number
-  receivedDate: string
-  content: string
+  date: string
   region: string
-  year: number
-  timePeriod: string | null
-  latitude: number | null
-  longitude: number | null
-  roadAddress: string | null
-  landAddress: string | null
+  lat: number | null
+  lng: number | null
+  period: string | null
+}
+
+interface ComplaintWithContent extends Complaint {
+  content?: string
+  roadAddress?: string | null
+  landAddress?: string | null
 }
 
 interface ComplaintListProps {
@@ -26,21 +28,79 @@ interface ComplaintListProps {
 type SortOption = 'newest' | 'oldest' | 'region'
 
 export default function ComplaintList({ complaints, totalCount, onClose, isVisible }: ComplaintListProps) {
+  const [complaintsWithContent, setComplaintsWithContent] = useState<ComplaintWithContent[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [loading, setLoading] = useState(false)
+  const [totalPages, setTotalPages] = useState(0)
   const [sortBy, setSortBy] = useState<SortOption>('newest')
+  const itemsPerPage = 20
+
+  // 민원 content 로드 함수
+  const loadComplaintsContent = useCallback(
+    async (page: number) => {
+      if (complaints.length === 0) return
+
+      try {
+        setLoading(true)
+        const complaintIds = complaints.map((c) => c.id)
+
+        const response = await fetch('/api/complaints/content', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            page: page,
+            limit: itemsPerPage,
+            ids: complaintIds,
+          }),
+        })
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        const data = await response.json()
+        setComplaintsWithContent(data.complaints || [])
+        setTotalPages(Math.ceil(data.totalCount / itemsPerPage))
+      } catch (error) {
+        console.error('민원 content 로드 오류:', error)
+        setComplaintsWithContent([])
+      } finally {
+        setLoading(false)
+      }
+    },
+    [complaints, itemsPerPage]
+  )
+
+  // 컴포넌트가 표시될 때 첫 페이지 로드
+  useEffect(() => {
+    if (isVisible && complaints.length > 0) {
+      setCurrentPage(1)
+      loadComplaintsContent(1)
+    }
+  }, [isVisible, complaints, loadComplaintsContent])
+
+  // 페이지 변경 시 데이터 로드
+  useEffect(() => {
+    if (isVisible && complaints.length > 0) {
+      loadComplaintsContent(currentPage)
+    }
+  }, [currentPage, isVisible, complaints.length, loadComplaintsContent])
 
   if (!isVisible || complaints.length === 0) return null
 
   // 정렬 함수
   const getSortedComplaints = () => {
-    const sorted = [...complaints]
+    const sorted = [...complaintsWithContent]
 
     switch (sortBy) {
       case 'newest':
-        return sorted.sort((a, b) => new Date(b.receivedDate).getTime() - new Date(a.receivedDate).getTime())
+        return sorted.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       case 'oldest':
-        return sorted.sort((a, b) => new Date(a.receivedDate).getTime() - new Date(b.receivedDate).getTime())
+        return sorted.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       case 'region':
-        return sorted.sort((a, b) => a.region.localeCompare(b.region))
+        return sorted.sort((a, b) => (a.region || '').localeCompare(b.region || ''))
       default:
         return sorted
     }
@@ -120,68 +180,126 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
 
       {/* Content */}
       <div className="max-h-96 space-y-4 overflow-y-auto">
-        {sortedComplaints.map((complaint, index) => (
-          <div
-            key={complaint.id}
-            className="rounded-xl border border-gray-100/50 bg-white/80 p-4 transition-all duration-200 hover:shadow-md"
-          >
-            <div className="mb-3 flex items-start justify-between">
-              <div className="flex items-center gap-2">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-red-600 text-xs font-bold text-white">
-                  {index + 1}
-                </div>
-                <span className="text-sm font-medium text-gray-600">민원 #{complaint.id}</span>
-              </div>
-              <div className="flex items-center gap-1 text-xs text-gray-500">
-                <Calendar className="h-3 w-3" />
-                {new Date(complaint.receivedDate).toLocaleDateString('ko-KR')}
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-center">
+              <div className="mb-2 text-gray-500">민원 내용을 불러오는 중...</div>
+              <div className="text-sm text-gray-400">
+                페이지 {currentPage} / {totalPages}
               </div>
             </div>
-
-            {/* 민원 내용 */}
-            <div className="mb-3">
-              <p className="leading-relaxed font-medium text-gray-800">{complaint.content}</p>
-            </div>
-
-            {/* 상세 정보 */}
-            <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-              <div className="flex items-center gap-1">
-                <MapPin className="h-4 w-4 text-red-500" />
-                <span>{complaint.region}</span>
-              </div>
-
-              {complaint.timePeriod && (
-                <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4 text-blue-500" />
-                  <span>{complaint.timePeriod}</span>
-                </div>
-              )}
-
-              {complaint.roadAddress && (
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-4 w-4 text-green-500" />
-                  <span className="max-w-[200px] truncate" title={complaint.roadAddress}>
-                    {complaint.roadAddress}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* 주소 정보 */}
-            {complaint.landAddress && (
-              <div className="mt-2 rounded-lg bg-gray-50/50 p-2 text-xs text-gray-500">
-                <span className="font-medium">지번 주소:</span> {complaint.landAddress}
-              </div>
-            )}
           </div>
-        ))}
+        ) : (
+          sortedComplaints.map((complaint, index) => (
+            <div
+              key={complaint.id}
+              className="rounded-xl border border-gray-100/50 bg-white/80 p-4 transition-all duration-200 hover:shadow-md"
+            >
+              <div className="mb-3 flex items-start justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-red-600 text-xs font-bold text-white">
+                    {(currentPage - 1) * itemsPerPage + index + 1}
+                  </div>
+                  <span className="text-sm font-medium text-gray-600">연번 : {complaint.id}</span>
+                </div>
+                <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <Calendar className="h-3 w-3" />
+                  {new Date(complaint.date).toLocaleDateString('ko-KR')}
+                </div>
+              </div>
+
+              {/* 민원 내용 */}
+              <div className="mb-3">
+                <p className="leading-relaxed text-gray-800">{complaint.content || '내용을 불러오는 중...'}</p>
+              </div>
+
+              {/* 상세 정보 */}
+              <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4 text-red-500" />
+                  <span>{complaint.region}</span>
+                </div>
+                {complaint.period && (
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-4 w-4 text-blue-500" />
+                    <span>{complaint.period}</span>
+                  </div>
+                )}
+                {complaint.roadAddress && (
+                  <div className="flex items-center gap-1">
+                    <MapPin className="h-4 w-4 text-green-500" />
+                    <span className="text-xs">{complaint.roadAddress}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))
+        )}
       </div>
+
+      {/* 페이지네이션 */}
+      {totalPages > 1 && (
+        <div className="mt-4 flex items-center justify-center gap-2">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+            disabled={currentPage === 1 || loading}
+            className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-all duration-200 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            이전
+          </button>
+
+          <div className="flex items-center gap-1">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNum
+              if (totalPages <= 5) {
+                pageNum = i + 1
+              } else if (currentPage <= 3) {
+                pageNum = i + 1
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i
+              } else {
+                pageNum = currentPage - 2 + i
+              }
+
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setCurrentPage(pageNum)}
+                  disabled={loading}
+                  className={`rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+                    currentPage === pageNum
+                      ? 'bg-red-500 text-white shadow-md'
+                      : 'text-gray-600 hover:bg-red-50 hover:text-red-600'
+                  } disabled:cursor-not-allowed disabled:opacity-50`}
+                >
+                  {pageNum}
+                </button>
+              )
+            })}
+          </div>
+
+          <button
+            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+            disabled={currentPage === totalPages || loading}
+            className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-all duration-200 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            다음
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
 
       {/* Footer */}
       <div className="mt-4 border-t border-gray-200/50 pt-4">
         <div className="flex items-center justify-between text-sm text-gray-600">
           <span>총 {totalCount}건의 민원</span>
-          <span>{getSortLabel(sortBy)}으로 정렬</span>
+          <div className="flex items-center gap-4">
+            <span>{getSortLabel(sortBy)}으로 정렬</span>
+            <span>
+              페이지 {currentPage} / {totalPages}
+            </span>
+          </div>
         </div>
       </div>
     </div>
