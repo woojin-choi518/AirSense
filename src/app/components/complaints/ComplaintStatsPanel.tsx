@@ -2,6 +2,8 @@
 
 import { BarChart3, Calendar, TrendingUp } from 'lucide-react'
 
+import Panel from '@/components/common/Panel'
+
 import { ChartConfig, ChartData } from './StatChart'
 import StatSection from './StatSection'
 
@@ -72,10 +74,10 @@ export default function ComplaintStatsPanel({ stats, config = {} }: ComplaintSta
   // 월별 차트 설정
   const monthConfig: ChartConfig = {
     title: '월별 민원 건수',
-    icon: <Calendar className="h-5 w-5 text-purple-600" />,
+    icon: <Calendar className="h-5 w-5 text-green-600" />,
     dataKey: 'value',
     color: '#8b5cf6',
-    gradientColors: ['#06b6d4', '#67e8f9', '#a5f3fc'],
+    gradientColors: ['#222222', '#444444', '#f5f5f5'],
     trendColor: '#10b981',
     trendGradientColors: ['#10b981', '#34d399', '#6ee7b7'],
     xAxisLabel: '월',
@@ -88,18 +90,14 @@ export default function ComplaintStatsPanel({ stats, config = {} }: ComplaintSta
     <div className="space-y-6">
       {/* 총 민원 건수 */}
       {config.showTotal !== false && (
-        <div className="rounded-2xl border border-blue-100/50 bg-gradient-to-br from-blue-50/80 to-indigo-50/80 p-6 shadow-lg backdrop-blur-sm transition-all duration-300 hover:shadow-xl">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 p-3 shadow-lg">
-              <BarChart3 className="h-6 w-6 text-white" />
+        <Panel title="총 민원 건수" icon={BarChart3} variant="blue" textAlign="left">
+          <div>
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-4xl font-bold text-transparent">
+              {stats.total || 0}
             </div>
-            <h3 className="text-lg font-semibold text-gray-800">총 민원 건수</h3>
+            <p className="mt-2 text-sm font-medium text-gray-600">건</p>
           </div>
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-4xl font-bold text-transparent">
-            {stats.total || 0}
-          </div>
-          <p className="mt-2 text-sm font-medium text-gray-600">건</p>
-        </div>
+        </Panel>
       )}
 
       {/* 지역별 통계 */}
