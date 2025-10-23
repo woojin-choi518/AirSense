@@ -18,6 +18,7 @@ DATABASE_URL="postgresql://username:password@localhost:5432/airsense_dev"
 ## 사용 가능한 스크립트
 
 ### 개발 환경
+
 - `npm run db:dev` - 개발 DB로 Prisma 클라이언트 생성
 - `npm run db:migrate:dev` - 개발 DB로 마이그레이션 실행
 - `npm run db:sync:dev` - 개발 DB로 스키마 동기화
@@ -25,6 +26,7 @@ DATABASE_URL="postgresql://username:password@localhost:5432/airsense_dev"
 - `npm run dev:with-db` - 개발 DB와 함께 개발 서버 실행
 
 ### 프로덕션 환경
+
 - `npm run db:prod` - 프로덕션 DB로 Prisma 클라이언트 생성
 - `npm run db:migrate:prod` - 프로덕션 DB로 마이그레이션 배포
 - `npm run db:sync:prod` - 프로덕션 DB로 스키마 동기화
