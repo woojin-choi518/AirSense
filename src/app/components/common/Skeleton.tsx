@@ -175,3 +175,48 @@ export function ComplaintListSkeleton() {
     </div>
   )
 }
+
+// 날씨 패널 스켈레톤
+interface WeatherPanelSkeletonProps {
+  error?: string | null
+}
+
+export function WeatherPanelSkeleton({ error }: WeatherPanelSkeletonProps) {
+  return (
+    <div className="max-h-[80vh] w-full overflow-y-auto p-2">
+      {/* 슬라이더 스켈레톤 */}
+      <div className="space-y-1 p-1">
+        <div className="text-center text-sm text-white">
+          <Skeleton className="mx-auto h-4 w-20" />
+        </div>
+        <Skeleton className="h-6 w-full rounded-full" />
+        <div className="mt-2 grid grid-cols-5 text-center text-xs text-white">
+          {Array.from({ length: 5 }).map((_, idx) => (
+            <Skeleton key={idx} className="mx-auto h-3 w-8" />
+          ))}
+        </div>
+      </div>
+
+      {/* 데이터 블록 스켈레톤 */}
+      <div className="mb-4 flex flex-col items-center justify-center space-y-2">
+        <Skeleton className="h-6 w-full rounded-full" />
+        <div className="mb-4 w-full space-y-2">
+          <Skeleton className="h-8 w-full rounded-full" />
+          <Skeleton className="h-8 w-full rounded-full" />
+          <Skeleton className="h-8 w-full rounded-full" />
+          <Skeleton className="h-8 w-full rounded-full" />
+          <Skeleton className="h-8 w-full rounded-full" />
+        </div>
+      </div>
+
+      {/* 에러 메시지 또는 안내 문구 스켈레톤 */}
+      {error ? (
+        <div className="mb-4 flex flex-col items-center justify-center space-y-2">
+          <div className="w-full rounded-full bg-red-500/20 p-2 text-center text-sm text-red-300">Error: {error}</div>
+        </div>
+      ) : (
+        <Skeleton className="h-12 w-full rounded-lg" />
+      )}
+    </div>
+  )
+}

@@ -3,6 +3,8 @@
 import axios from 'axios'
 import React, { useEffect, useMemo, useState } from 'react'
 
+import { WeatherPanelSkeleton } from '../common/Skeleton'
+
 interface WeatherPanelProps {
   onForecastSelect?: (hourData: any) => void
   selIndex: number
@@ -83,8 +85,13 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
     }
   }, [selIndex, forecastList, onForecastSelect])
 
-  if (loading) return <div className="text-xs text-white">Loading…</div>
-  if (error) return <div className="text-xs text-white">Error: {error}</div>
+  if (loading) {
+    return <WeatherPanelSkeleton />
+  }
+
+  if (error) {
+    return <WeatherPanelSkeleton error={error} />
+  }
 
   const selFc = forecastList[selIndex]
   const T = current?.main?.temp
@@ -132,11 +139,11 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
 
       {/* 데이터 블록 */}
       {selIndex === 0 ? (
-        <div className="mb-4 space-y-2">
-          <div className="rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-center text-sm text-white">
+        <div className="mb-4 flex flex-col items-center justify-center space-y-2">
+          <div className="w-full rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-center text-sm text-white">
             {lastUpdated}
           </div>
-          <div className="mb-4 space-y-2">
+          <div className="mb-4 w-full space-y-2">
             <div className="rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-center text-sm text-white">
               온도: {T}°C
             </div>
@@ -165,17 +172,17 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
         </div>
       ) : (
         selFc && (
-          <div className="mb-4 space-y-2">
-            <div className="rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-center text-sm text-white">
+          <div className="mb-4 flex flex-col items-center justify-center space-y-2">
+            <div className="w-full rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-center text-sm text-white">
               {new Date(selFc.dt * 1000).toLocaleString('ko-KR')}
             </div>
-            <div className="rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-center text-sm text-white">
+            <div className="w-full rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-center text-sm text-white">
               온도: {selFc.main.temp}°C
             </div>
-            <div className="rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-center text-sm text-white">
+            <div className="w-full rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-center text-sm text-white">
               습도: {selFc.main.humidity}%
             </div>
-            <div className="flex items-center justify-center rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-sm text-white">
+            <div className="flex w-full items-center justify-center rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-sm text-white">
               풍향:
               <svg
                 className="mx-1 h-4 w-4"
@@ -187,7 +194,7 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
               </svg>
               ({selFc.wind.deg}°)
             </div>
-            <div className="rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-center text-sm text-white">
+            <div className="w-full rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-center text-sm text-white">
               풍속: {selFc.wind.speed} m/s
             </div>
           </div>
