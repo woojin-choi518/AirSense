@@ -4,18 +4,14 @@ import { GoogleMap, Marker } from '@react-google-maps/api'
 import { Calendar, Clock, Filter, MapPin } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
-import { FilterPanelSkeleton, MapSkeleton, StatsPanelSkeleton } from '@/app/components/common/Skeleton'
-import ComplaintList from '@/app/components/complaints/ComplaintList'
-import ComplaintStatsPanel from '@/app/components/complaints/ComplaintStatsPanel'
+import { FilterPanelSkeleton, MapSkeleton, StatsPanelSkeleton } from '@/components/common/Skeleton'
+import ComplaintList from '@/components/complaints/ComplaintList'
+import ComplaintStatsPanel from '@/components/complaints/ComplaintStatsPanel'
+import { ASAN_CENTER } from '@/constants'
 
 const mapContainerStyle = {
   width: '100%',
   height: '500px',
-}
-
-const center = {
-  lat: 36.7848, // 아산시 중심 좌표
-  lng: 127.0039,
 }
 
 const mapOptions = {
@@ -46,6 +42,7 @@ export default function ComplaintsPage() {
   const [allComplaints, setAllComplaints] = useState<Complaint[]>([])
   const [filteredComplaints, setFilteredComplaints] = useState<Complaint[]>([])
   const [stats, setStats] = useState<ComplaintStats | null>(null)
+  const [allRegions, setAllRegions] = useState<{ region: string; count: number }[]>([])
   const [loading, setLoading] = useState(true)
   const [, setSelectedComplaint] = useState<Complaint | null>(null)
   const [selectedClusterComplaints, setSelectedClusterComplaints] = useState<Complaint[]>([])
@@ -80,6 +77,10 @@ export default function ComplaintsPage() {
 
       const data = await response.json()
       setAllComplaints(data.complaints || [])
+
+      // 전체 지역 통계 계산 (필터링과 관계없이)
+      const allRegionStats = getRegionStats(data.complaints || [])
+      setAllRegions(allRegionStats)
 
       console.log(`모든 데이터 로딩 완료: ${data.complaints?.length || 0}건`)
     } catch (error) {
@@ -351,7 +352,7 @@ export default function ComplaintsPage() {
                   className="w-full rounded-lg border border-gray-300 bg-white/50 px-3 py-2 text-sm transition-all duration-200 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:outline-none"
                 >
                   <option value="all">전체 지역</option>
-                  {stats?.byRegion?.map((item) => (
+                  {allRegions?.map((item) => (
                     <option key={item?.region || 'unknown'} value={item?.region || ''}>
                       {item?.region || '알 수 없음'} ({item?.count || 0}건)
                     </option>
@@ -394,7 +395,7 @@ export default function ComplaintsPage() {
                   민원 발생 위치
                 </h2>
                 <div className="overflow-hidden rounded-lg shadow-lg">
-                  <GoogleMap mapContainerStyle={mapContainerStyle} center={center} zoom={12} options={mapOptions}>
+                  <GoogleMap mapContainerStyle={mapContainerStyle} center={ASAN_CENTER} zoom={12} options={mapOptions}>
                     {createClusteredMarkers(
                       filteredComplaints.filter((complaint) => complaint.lat && complaint.lng)
                     ).map((cluster, index) => (
