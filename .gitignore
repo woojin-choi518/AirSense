@@ -42,7 +42,6 @@ next-env.d.ts
 
 #scripts
 scripts/package.json
-/scripts
 
 #data
 /data

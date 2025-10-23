@@ -48,3 +48,47 @@ model Complaint {
   @@map("Complaint")
   @@schema("airsense")
 }
+
+// 새로운 민원 폼용 모델
+model FeedbackComplaint {
+  id          String   @id @default(cuid())
+  contact     String?  // 연락처 (선택사항)
+  coordinates String   // 좌표 (위도,경도)
+  address     String   // 주소
+  intensity   Int      // 강도 1-5
+  content     String   // 민원 내용
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 관계: 민원과 카테고리의 다대다 관계
+  categories  FeedbackComplaintCategory[]
+  
+  @@map("FeedbackComplaint")
+  @@schema("airsense")
+}
+
+model FeedbackCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique // 카테고리명
+  createdAt   DateTime @default(now())
+  
+  // 관계: 카테고리와 민원의 다대다 관계
+  complaints  FeedbackComplaintCategory[]
+  
+  @@map("FeedbackCategory")
+  @@schema("airsense")
+}
+
+// 중간 테이블 (다대다 관계를 위해)
+model FeedbackComplaintCategory {
+  id          String @id @default(cuid())
+  complaintId String
+  categoryId  String
+  
+  complaint   FeedbackComplaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+  category    FeedbackCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  
+  @@unique([complaintId, categoryId])
+  @@map("FeedbackComplaintCategory")
+  @@schema("airsense")
+}

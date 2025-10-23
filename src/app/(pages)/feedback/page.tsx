@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
-import RequiredMaker from '@/app/utils/RequiredMaker'
-
-import { AddressSearchInput } from '../../components/feedback/AddressSearchInput'
+import { AddressSearchInput } from '@/components/feedback/AddressSearchInput'
+import RequiredMaker from '@/utils/RequiredMaker'
 
 interface ComplaintFormData {
   contact?: string
@@ -91,25 +90,45 @@ export default function FeedbackPage() {
   }
 
   // 폼 제출 처리
-  const onSubmit = (data: ComplaintFormData) => {
-    const formData = {
-      ...data,
-      coordinates,
-      address,
-      categories: selectedCategories,
+  const onSubmit = async (data: ComplaintFormData) => {
+    try {
+      const formData = {
+        contact: data.contact || null,
+        coordinates,
+        address,
+        intensity: data.intensity,
+        content: data.content,
+        categories: selectedCategories,
+      }
+
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        alert('민원이 성공적으로 제출되었습니다!')
+
+        // 폼 리셋
+        setSelectedCategories([])
+        setAddress('')
+        setValue('contact', '')
+        setValue('coordinates', '')
+        setValue('address', '')
+        setValue('intensity', 1)
+        setValue('content', '')
+      } else {
+        alert(`민원 제출에 실패했습니다: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('민원 제출 오류:', error)
+      alert('민원 제출 중 오류가 발생했습니다.')
     }
-
-    console.log('민원 데이터:', formData)
-    alert('민원이 제출되었습니다! (현재는 콘솔에 출력됩니다)')
-
-    // 폼 리셋
-    setSelectedCategories([])
-    setAddress('')
-    setValue('contact', '')
-    setValue('coordinates', '')
-    setValue('address', '')
-    setValue('intensity', 1)
-    setValue('content', '')
   }
 
   const intensity = watch('intensity')
