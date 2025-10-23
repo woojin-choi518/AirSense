@@ -13,7 +13,18 @@
     "db": "npx prisma studio",
     "db:sync": "npx prisma db push && npx prisma generate",
     "db:migrate": "npx prisma migrate dev && npx prisma generate",
-    "upload-complaints": "node scripts/upload-complaints.js"
+    "upload-complaints": "node scripts/upload-complaints.js",
+    "db:dev": "cross-env DATABASE_URL=$DATABASE_URL_DEV npx prisma generate",
+    "db:prod": "cross-env DATABASE_URL=$DATABASE_URL_PROD npx prisma generate",
+    "db:migrate:dev": "cross-env DATABASE_URL=$DATABASE_URL_DEV npx prisma migrate dev && cross-env DATABASE_URL=$DATABASE_URL_DEV npx prisma generate",
+    "db:migrate:prod": "cross-env DATABASE_URL=$DATABASE_URL_PROD npx prisma migrate deploy && cross-env DATABASE_URL=$DATABASE_URL_PROD npx prisma generate",
+    "db:sync:dev": "cross-env DATABASE_URL=$DATABASE_URL_DEV npx prisma db push && cross-env DATABASE_URL=$DATABASE_URL_DEV npx prisma generate",
+    "db:sync:prod": "cross-env DATABASE_URL=$DATABASE_URL_PROD npx prisma db push && cross-env DATABASE_URL=$DATABASE_URL_PROD npx prisma generate",
+    "db:studio:dev": "cross-env DATABASE_URL=$DATABASE_URL_DEV npx prisma studio",
+    "db:studio:prod": "cross-env DATABASE_URL=$DATABASE_URL_PROD npx prisma studio",
+    "dev:with-db": "cross-env DATABASE_URL=$DATABASE_URL_DEV npm run dev",
+    "dev:env": "dotenv -e .env.development -- npm run dev",
+    "build:with-db": "cross-env DATABASE_URL=$DATABASE_URL_PROD npm run build"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",
@@ -41,6 +52,8 @@
     "@types/react-dom": "^19",
     "@typescript-eslint/eslint-plugin": "^8.46.0",
     "@typescript-eslint/parser": "^8.46.0",
+    "cross-env": "^7.0.3",
+    "dotenv-cli": "^10.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.5.4",
     "eslint-config-prettier": "^10.1.8",
