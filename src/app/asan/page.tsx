@@ -351,7 +351,7 @@ export default function FarmMapPage() {
         title="날씨 정보"
         horizontal="right-4"
         topOffset={64}
-        widthClass="min-w-[160px] max-w-[24vw] sm:max-w-[20vw]"
+        widthClass="min-w-[230px] max-w-[24vw] sm:max-w-[20vw]"
       >
         <WeatherPanel
           onForecastSelect={handleForecastSelect}

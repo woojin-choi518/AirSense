@@ -23,7 +23,7 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
   const [current, setCurrent] = useState<any>(null)
   const [forecastList, setForecastList] = useState<any[]>([])
   const [lastUpdated, setLastUpdated] = useState<string>('')
-  const [loading, setLoading] = useState<boolean>(true)
+  const [loading, setLoading] = useState<boolean>(false) // 초기값을 false로 변경
   const [error, setError] = useState<string | null>(null)
 
   const guidance = useMemo(() => {
@@ -71,10 +71,16 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
         setLoading(false)
       }
     }
+
+    // selIndex가 변경될 때마다 loading 상태 초기화
     if (selIndex === 0) {
       fetchCurrent()
       iv = setInterval(fetchCurrent, 300_000)
+    } else {
+      // 예보 모드로 전환할 때는 loading 상태를 즉시 해제
+      setLoading(false)
     }
+
     return () => iv && clearInterval(iv)
   }, [selIndex])
 
@@ -85,7 +91,8 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
     }
   }, [selIndex, forecastList, onForecastSelect])
 
-  if (loading) {
+  // 실시간 모드에서만 loading 표시
+  if (selIndex === 0 && loading) {
     return <WeatherPanelSkeleton />
   }
 
