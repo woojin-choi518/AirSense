@@ -1,10 +1,11 @@
 'use client'
 
-import { GoogleMap, InfoWindow, Marker, useJsApiLoader } from '@react-google-maps/api'
+import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api'
 import axios from 'axios'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useMediaQuery } from 'react-responsive'
 
+import FarmInfoWindow from '@/components/asan/FarmInfoWindow'
 import LivestockCombinedFilterPanel from '@/components/asan/LivestockCombinedFilterPanel'
 import LivestockPieChartPanel from '@/components/asan/LivestockPieChartPanel'
 import OdorOverlay from '@/components/asan/OdorOverlay'
@@ -401,10 +402,6 @@ export default function FarmMapPage() {
                       : '기타'
               const { stroke } = odorColorMap[cat]
               return (
-                // <React.Fragment key={f.farmId}>
-                //   <CircleOverlay map={map} center={f.center} radius={f.radius * 0.6} color={stroke} />
-                //   <SectorOverlay map={map} center={f.center} radius={f.radius * 0.8} startAngle={f.startA} endAngle={f.endA} color={stroke} />
-                // </React.Fragment>
                 <OdorOverlay
                   key={f.farmId}
                   map={map}
@@ -413,12 +410,10 @@ export default function FarmMapPage() {
                   startAngle={f.startA}
                   endAngle={f.endA}
                   color={stroke}
-                  // 기존의 0.6, 0.8 스케일 유지
                   showCircle
                   showSector
                   circleScale={0.6}
                   sectorScale={0.8}
-                  // 필요하면 투명도도 여기서 조절 가능
                   circleAlpha={0.35}
                   sectorAlpha={0.4}
                 />
@@ -426,48 +421,13 @@ export default function FarmMapPage() {
             })}
 
           {selectedFarmDetail && (
-            <InfoWindow
-              position={{ lat: selectedFarmDetail.lat, lng: selectedFarmDetail.lng }}
-              onCloseClick={() => {
+            <FarmInfoWindow
+              farm={selectedFarmDetail}
+              onClose={() => {
                 setSelectedId(null)
                 setSelectedFarmDetail(null)
               }}
-              options={{ pixelOffset: new window.google.maps.Size(0, -30) }}
-            >
-              <div className="w-full max-w-[90vw] space-y-3 rounded-xl border-2 border-green-300 bg-white/80 p-4 text-sm break-words text-gray-800 backdrop-blur-md sm:max-w-[20rem]">
-                <h3 className="text-lg font-bold text-green-700">{selectedFarmDetail.farm_name}</h3>
-                <div className="flex items-center gap-2">
-                  <span className="min-w-[5rem] rounded-full bg-green-100 px-4 py-2 text-center font-medium text-green-600">
-                    축종
-                  </span>
-                  <span>{selectedFarmDetail.livestock_type}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="min-w-[5rem] rounded-full bg-green-100 px-4 py-2 text-center font-medium text-green-600">
-                    사육두수
-                  </span>
-                  <span>{selectedFarmDetail.livestock_count.toLocaleString()}두</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="min-w-[5rem] rounded-full bg-green-100 px-4 py-2 text-center font-medium text-green-600">
-                    면적
-                  </span>
-                  <span>{selectedFarmDetail.area_sqm.toLocaleString()}㎡</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="min-w-[5rem] rounded-full bg-green-100 px-4 py-2 text-center font-medium text-green-600">
-                    도로명
-                  </span>
-                  <span>{selectedFarmDetail.road_address || '없음'}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="min-w-[5rem] rounded-full bg-green-100 px-4 py-2 text-center font-medium text-green-600">
-                    지번
-                  </span>
-                  <span>{selectedFarmDetail.land_address || '없음'}</span>
-                </div>
-              </div>
-            </InfoWindow>
+            />
           )}
         </GoogleMap>
       </div>

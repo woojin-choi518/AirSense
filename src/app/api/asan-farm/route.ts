@@ -25,14 +25,14 @@ function calculateWindDirection(
   windDir: number,
   windSpeed: number,
   humidity: number,
-  stability: 'stable' | 'neutral' | 'unstable' = 'neutral'
+  stability: 'stable' | 'neutral' | 'unstable' = 'neutral',
+  globalMaxCount: number
 ) {
   const halfAngle = 30
   const baseRadius = 500
   const maxRadius = 5000
 
-  const maxCount = Math.max(...farms.map((f) => f.livestockCount), 1)
-  const safeMax = Math.max(maxCount, 1)
+  const safeMax = Math.max(globalMaxCount, 1)
 
   // 환경 계수 계산
   const windMul = windSpeed <= 0.5 ? 1.5 : windSpeed >= 1.5 ? 0.7 : 1.0
@@ -73,6 +73,17 @@ export async function GET(request: NextRequest) {
     const typesParam = searchParams.get('types')
     const types = typesParam ? typesParam.split(',').filter((t) => t.trim().length > 0) : []
 
+    // 전체 농장 데이터에서 최대 가축 수를 먼저 계산 (필터링과 무관하게 일관된 기준 사용)
+    const allFarmsForMaxCount = await prisma.livestockFarm.findMany({
+      where: {
+        latitude: { not: null },
+        longitude: { not: null },
+        livestockCount: { gt: 0 },
+      },
+      select: { livestockCount: true },
+    })
+    const globalMaxCount = Math.max(...allFarmsForMaxCount.map((f) => f.livestockCount), 1)
+
     const farms = await prisma.livestockFarm.findMany({
       where: {
         latitude: { not: null },
@@ -90,8 +101,8 @@ export async function GET(request: NextRequest) {
       orderBy: { livestockCount: 'desc' }, // 큰 농장을 우선
     })
 
-    // 바람 방향 계산
-    const windData = calculateWindDirection(farms, windDir, windSpeed, humidity, stability)
+    // 바람 방향 계산 (전체 데이터셋 기준의 maxCount 사용)
+    const windData = calculateWindDirection(farms, windDir, windSpeed, humidity, stability, globalMaxCount)
 
     // 마커 표시에 필요한 데이터와 바람 방향 데이터를 통합
     const formatted = farms.map((farm) => {
