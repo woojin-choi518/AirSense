@@ -3,8 +3,6 @@
 import { ArrowDown, ArrowUp, ArrowUpDown, Calendar, ChevronLeft, ChevronRight, Clock, MapPin } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
-import { ComplaintListSkeleton } from '@/app/components/common/Skeleton'
-
 interface Complaint {
   id: number
   date: string
@@ -44,6 +42,8 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
 
       try {
         setLoading(true)
+        // 로딩 시작 시 기존 데이터 초기화하여 스켈레톤 표시
+        setComplaintsWithContent([])
         const complaintIds = complaints.map((c) => c.id)
 
         const response = await fetch('/api/complaints/content', {
@@ -91,11 +91,6 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
   }, [currentPage, isVisible, complaints.length, loadComplaintsContent])
 
   if (!isVisible || complaints.length === 0) return null
-
-  // 로딩 중일 때 스켈레톤 표시
-  if (loading && complaintsWithContent.length === 0) {
-    return <ComplaintListSkeleton />
-  }
 
   // 정렬 함수
   const getSortedComplaints = () => {
@@ -187,61 +182,74 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
 
       {/* Content */}
       <div className="max-h-96 space-y-4 overflow-y-auto">
-        {loading && complaintsWithContent.length > 0 ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="text-center">
-              <div className="mb-2 text-gray-500">민원 내용을 불러오는 중...</div>
-              <div className="text-sm text-gray-400">
-                페이지 {currentPage} / {totalPages}
-              </div>
-            </div>
-          </div>
-        ) : (
-          sortedComplaints.map((complaint, index) => (
-            <div
-              key={complaint.id}
-              className="rounded-xl border border-gray-100/50 bg-white/80 p-4 transition-all duration-200 hover:shadow-md"
-            >
-              <div className="mb-3 flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-red-600 text-xs font-bold text-white">
-                    {(currentPage - 1) * itemsPerPage + index + 1}
+        {loading
+          ? // 로딩 시 스켈레톤 아이템들 표시
+            Array.from({ length: 5 }, (_, index) => (
+              <div
+                key={`skeleton-${index}`}
+                className="animate-pulse rounded-xl border border-gray-100/50 bg-white/80 p-4"
+              >
+                <div className="mb-3 flex items-start justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="h-6 w-6 rounded-full bg-gray-200"></div>
+                    <div className="h-4 w-16 rounded bg-gray-200"></div>
                   </div>
-                  <span className="text-sm font-medium text-gray-600">연번 : {complaint.id}</span>
+                  <div className="h-4 w-20 rounded bg-gray-200"></div>
                 </div>
-                <div className="flex items-center gap-1 text-xs text-gray-500">
-                  <Calendar className="h-3 w-3" />
-                  {new Date(complaint.date).toLocaleDateString('ko-KR')}
+                <div className="mb-3">
+                  <div className="mb-2 h-4 rounded bg-gray-200"></div>
+                  <div className="h-4 w-3/4 rounded bg-gray-200"></div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="h-4 w-24 rounded bg-gray-200"></div>
+                  <div className="h-4 w-20 rounded bg-gray-200"></div>
                 </div>
               </div>
+            ))
+          : sortedComplaints.map((complaint, index) => (
+              <div
+                key={complaint.id}
+                className="rounded-xl border border-gray-100/50 bg-white/80 p-4 transition-all duration-200 hover:shadow-md"
+              >
+                <div className="mb-3 flex items-start justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-red-600 text-xs font-bold text-white">
+                      {(currentPage - 1) * itemsPerPage + index + 1}
+                    </div>
+                    <span className="text-sm font-medium text-gray-600">연번 : {complaint.id}</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-xs text-gray-500">
+                    <Calendar className="h-3 w-3" />
+                    {new Date(complaint.date).toLocaleDateString('ko-KR')}
+                  </div>
+                </div>
 
-              {/* 민원 내용 */}
-              <div className="mb-3">
-                <p className="leading-relaxed text-gray-800">{complaint.content || '내용을 불러오는 중...'}</p>
-              </div>
-
-              {/* 상세 정보 */}
-              <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-4 w-4 text-red-500" />
-                  <span>{complaint.region}</span>
+                {/* 민원 내용 */}
+                <div className="mb-3">
+                  <p className="leading-relaxed text-gray-800">{complaint.content || '내용을 불러오는 중...'}</p>
                 </div>
-                {complaint.period && (
+
+                {/* 상세 정보 */}
+                <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                   <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4 text-blue-500" />
-                    <span>{complaint.period}</span>
+                    <MapPin className="h-4 w-4 text-red-500" />
+                    <span>{complaint.region}</span>
                   </div>
-                )}
-                {complaint.roadAddress && (
-                  <div className="flex items-center gap-1">
-                    <MapPin className="h-4 w-4 text-green-500" />
-                    <span className="text-xs">{complaint.roadAddress}</span>
-                  </div>
-                )}
+                  {complaint.period && (
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-4 w-4 text-blue-500" />
+                      <span>{complaint.period}</span>
+                    </div>
+                  )}
+                  {complaint.roadAddress && (
+                    <div className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4 text-green-500" />
+                      <span className="text-xs">{complaint.roadAddress}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))
-        )}
+            ))}
       </div>
 
       {/* 페이지네이션 */}
