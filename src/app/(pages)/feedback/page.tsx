@@ -1,0 +1,211 @@
+'use client'
+
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+
+interface ComplaintFormData {
+  contact?: string
+  location: string
+  intensity: number
+  content: string
+  categories: string[]
+}
+
+const COMPLAINT_CATEGORIES = [
+  '가축·분뇨 냄새',
+  '음식물 쓰레기 냄새',
+  '하수·정화조 냄새',
+  '화학물질·공장 냄새',
+  '담배·생활 냄새',
+  '기타',
+]
+
+const INTENSITY_LABELS = [
+  '전혀 불편하지 않음',
+  '조금 불편함',
+  '보통 불편함',
+  '매우 불편함',
+  '매우 불편함 (짜증 및 두통 유발)',
+]
+
+export default function FeedbackPage() {
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<ComplaintFormData>({
+    defaultValues: {
+      intensity: 1,
+      categories: [],
+    },
+  })
+
+  // 위치 정보 획득
+  const getCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords
+          setValue('location', `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`)
+        },
+        (error) => {
+          console.error('위치 정보 획득에 실패했습니다:', error)
+          alert('위치 정보 획득에 실패했습니다. 수동으로 입력해주세요.')
+        }
+      )
+    } else {
+      alert('이 브라우저는 위치 정보를 지원하지 않습니다.')
+    }
+  }
+
+  // 카테고리 선택 처리
+  const handleCategoryChange = (category: string, checked: boolean) => {
+    if (checked) {
+      setSelectedCategories([...selectedCategories, category])
+    } else {
+      setSelectedCategories(selectedCategories.filter((c) => c !== category))
+    }
+  }
+
+  // 폼 제출 처리
+  const onSubmit = (data: ComplaintFormData) => {
+    const formData = {
+      ...data,
+      categories: selectedCategories,
+    }
+
+    console.log('민원 데이터:', formData)
+    alert('민원이 제출되었습니다! (현재는 콘솔에 출력됩니다)')
+
+    // 폼 리셋
+    setSelectedCategories([])
+    setValue('contact', '')
+    setValue('location', '')
+    setValue('intensity', 1)
+    setValue('content', '')
+  }
+
+  const intensity = watch('intensity')
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-emerald-50/30 py-8">
+      <div className="mx-auto max-w-2xl px-4">
+        <div className="rounded-lg border border-black/20 bg-white/80 p-6 shadow-lg backdrop-blur-sm">
+          <h1 className="mb-6 text-center text-2xl font-bold text-gray-900">민원 접수</h1>
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* 연락처 */}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">연락처 (선택)</label>
+              <input
+                type="text"
+                {...register('contact')}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                placeholder="전화번호 또는 이메일 주소"
+              />
+            </div>
+
+            {/* 위치 정보 */}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">위치</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  {...register('location', { required: '위치 정보를 입력해주세요' })}
+                  className="flex-1 rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  placeholder="주소 또는 좌표"
+                />
+                <button
+                  type="button"
+                  onClick={getCurrentLocation}
+                  className="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                >
+                  현재 위치
+                </button>
+              </div>
+              {errors.location && <p className="mt-1 text-sm text-red-600">{errors.location.message}</p>}
+            </div>
+
+            {/* 강도 */}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                강도: {intensity} - {INTENSITY_LABELS[intensity - 1]}
+              </label>
+              <input
+                type="range"
+                min="1"
+                max="5"
+                {...register('intensity', { required: true })}
+                className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200"
+              />
+              <div className="mt-1 flex justify-between text-xs text-gray-500">
+                <span>1</span>
+                <span>2</span>
+                <span>3</span>
+                <span>4</span>
+                <span>5</span>
+              </div>
+            </div>
+
+            {/* 민원 내용 */}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">민원 내용</label>
+              <textarea
+                {...register('content', { required: '민원 내용을 입력해주세요' })}
+                rows={4}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                placeholder="구체적인 민원 내용을 작성해주세요"
+              />
+              {errors.content && <p className="mt-1 text-sm text-red-600">{errors.content.message}</p>}
+            </div>
+
+            {/* 사례 체크박스 */}
+            <div>
+              <label className="mb-3 block text-sm font-medium text-gray-700">사례</label>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                {COMPLAINT_CATEGORIES.map((category) => (
+                  <label key={category} className="flex cursor-pointer items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedCategories.includes(category)}
+                      onChange={(e) => handleCategoryChange(category, e.target.checked)}
+                      className="h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm text-gray-700">{category}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* 제출 버튼 */}
+            <div className="flex gap-4 pt-4">
+              <button
+                type="submit"
+                className="flex-1 rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              >
+                민원 제출
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCategories([])
+                  setValue('contact', '')
+                  setValue('location', '')
+                  setValue('intensity', 1)
+                  setValue('content', '')
+                }}
+                className="rounded-md bg-gray-300 px-6 py-2 text-gray-700 hover:bg-gray-400 focus:ring-2 focus:ring-gray-500 focus:outline-none"
+              >
+                리셋
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  )
+}

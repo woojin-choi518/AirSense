@@ -1,6 +1,6 @@
 'use client'
 
-import { AlertCircle, House, Map } from 'lucide-react'
+import { AlertCircle, House, Map, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -14,12 +14,15 @@ export default function Header() {
       ? [
           { label: '악취 지도', href: '/asan', icon: Map },
           { label: '민원 지도', href: '/complaints', icon: AlertCircle },
+          { label: '민원 접수', href: '/feedback', icon: MessageSquare },
         ]
       : [
           { label: 'Home', href: '/', icon: House },
           { label: '악취 지도', href: '/asan', icon: Map },
           { label: '민원 지도', href: '/complaints', icon: AlertCircle },
+          { label: '민원 접수', href: '/feedback', icon: MessageSquare },
         ]
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 0)
     window.addEventListener('scroll', onScroll)
