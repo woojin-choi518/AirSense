@@ -1,11 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
+
+import RequiredMaker from '@/app/utils/RequiredMaker'
+
+import { AddressSearchInput } from '../../components/feedback/AddressSearchInput'
 
 interface ComplaintFormData {
   contact?: string
-  location: string
+  coordinates: string
+  address: string
   intensity: number
   content: string
   categories: string[]
@@ -30,6 +35,8 @@ const INTENSITY_LABELS = [
 
 export default function FeedbackPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [coordinates, setCoordinates] = useState<string>('')
+  const [address, setAddress] = useState<string>('')
 
   const {
     register,
@@ -44,25 +51,37 @@ export default function FeedbackPage() {
     },
   })
 
-  // 위치 정보 획득
-  const getCurrentLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords
-          setValue('location', `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`)
-        },
-        (error) => {
-          console.error('위치 정보 획득에 실패했습니다:', error)
-          alert('위치 정보 획득에 실패했습니다. 수동으로 입력해주세요.')
-        }
-      )
-    } else {
-      alert('이 브라우저는 위치 정보를 지원하지 않습니다.')
+  // 페이지 로드 시 자동으로 좌표 획득
+  useEffect(() => {
+    const getCurrentLocation = () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords
+            const coordString = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`
+            setCoordinates(coordString)
+            setValue('coordinates', coordString)
+          },
+          (error) => {
+            console.error('위치 정보 획득에 실패했습니다:', error)
+            setCoordinates('위치 정보를 가져올 수 없습니다')
+            setValue('coordinates', '위치 정보를 가져올 수 없습니다')
+          }
+        )
+      } else {
+        setCoordinates('이 브라우저는 위치 정보를 지원하지 않습니다')
+        setValue('coordinates', '이 브라우저는 위치 정보를 지원하지 않습니다')
+      }
     }
-  }
 
-  // 카테고리 선택 처리
+    getCurrentLocation()
+  }, [setValue])
+
+  // 주소 변경 처리
+  const handleAddressChange = (newAddress: string) => {
+    setAddress(newAddress)
+    setValue('address', newAddress)
+  }
   const handleCategoryChange = (category: string, checked: boolean) => {
     if (checked) {
       setSelectedCategories([...selectedCategories, category])
@@ -75,6 +94,8 @@ export default function FeedbackPage() {
   const onSubmit = (data: ComplaintFormData) => {
     const formData = {
       ...data,
+      coordinates,
+      address,
       categories: selectedCategories,
     }
 
@@ -83,8 +104,10 @@ export default function FeedbackPage() {
 
     // 폼 리셋
     setSelectedCategories([])
+    setAddress('')
     setValue('contact', '')
-    setValue('location', '')
+    setValue('coordinates', '')
+    setValue('address', '')
     setValue('intensity', 1)
     setValue('content', '')
   }
@@ -109,31 +132,21 @@ export default function FeedbackPage() {
               />
             </div>
 
-            {/* 위치 정보 */}
+            {/* 주소 */}
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">위치</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  {...register('location', { required: '위치 정보를 입력해주세요' })}
-                  className="flex-1 rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  placeholder="주소 또는 좌표"
-                />
-                <button
-                  type="button"
-                  onClick={getCurrentLocation}
-                  className="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                >
-                  현재 위치
-                </button>
-              </div>
-              {errors.location && <p className="mt-1 text-sm text-red-600">{errors.location.message}</p>}
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                주소
+                <RequiredMaker />
+              </label>
+              <AddressSearchInput address={address} setAddress={handleAddressChange} />
+              {errors.address && <p className="mt-1 text-sm text-red-600">{errors.address.message}</p>}
             </div>
 
             {/* 강도 */}
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-700">
-                강도: {intensity} - {INTENSITY_LABELS[intensity - 1]}
+                강도
+                <RequiredMaker />: {intensity} - {INTENSITY_LABELS[intensity - 1]}
               </label>
               <input
                 type="range"
@@ -153,7 +166,10 @@ export default function FeedbackPage() {
 
             {/* 민원 내용 */}
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">민원 내용</label>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                민원 내용
+                <RequiredMaker />
+              </label>
               <textarea
                 {...register('content', { required: '민원 내용을 입력해주세요' })}
                 rows={4}
@@ -165,7 +181,9 @@ export default function FeedbackPage() {
 
             {/* 사례 체크박스 */}
             <div>
-              <label className="mb-3 block text-sm font-medium text-gray-700">사례</label>
+              <label className="mb-3 block text-sm font-medium text-gray-700">
+                사례 <RequiredMaker />
+              </label>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 {COMPLAINT_CATEGORIES.map((category) => (
                   <label key={category} className="flex cursor-pointer items-center space-x-2">
@@ -193,8 +211,10 @@ export default function FeedbackPage() {
                 type="button"
                 onClick={() => {
                   setSelectedCategories([])
+                  setAddress('')
                   setValue('contact', '')
-                  setValue('location', '')
+                  setValue('coordinates', '')
+                  setValue('address', '')
                   setValue('intensity', 1)
                   setValue('content', '')
                 }}
