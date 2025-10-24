@@ -45,3 +45,5 @@ scripts/package.json
 
 #data
 /data
+*.json
+*.csv
