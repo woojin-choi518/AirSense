@@ -70,6 +70,7 @@ model FeedbackComplaint {
 model FeedbackCategory {
   id          String   @id @default(cuid())
   name        String   @unique // 카테고리명
+  isDefault   Boolean  @default(false) // 기본 표시 여부
   createdAt   DateTime @default(now())
   
   // 관계: 카테고리와 민원의 다대다 관계

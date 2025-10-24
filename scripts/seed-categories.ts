@@ -19,9 +19,9 @@ async function seedCategories() {
       await prisma.feedbackCategory.upsert({
         where: { name: categoryName },
         update: {},
-        create: { name: categoryName },
+        create: { name: categoryName, isDefault: true },
       })
-      console.log(`✓ 카테고리 생성: ${categoryName}`)
+      console.log(`✓ 카테고리 생성: ${categoryName} (기본 표시)`)
     }
 
     console.log('모든 카테고리가 성공적으로 생성되었습니다!')

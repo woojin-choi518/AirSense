@@ -36,6 +36,7 @@ export default function FeedbackPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [coordinates, setCoordinates] = useState<string>('')
   const [address, setAddress] = useState<string>('')
+  const [otherCategoryText, setOtherCategoryText] = useState<string>('')
 
   const {
     register,
@@ -86,19 +87,28 @@ export default function FeedbackPage() {
       setSelectedCategories([...selectedCategories, category])
     } else {
       setSelectedCategories(selectedCategories.filter((c) => c !== category))
+      // 기타 카테고리가 해제되면 텍스트도 초기화
+      if (category === '기타') {
+        setOtherCategoryText('')
+      }
     }
   }
 
   // 폼 제출 처리
   const onSubmit = async (data: ComplaintFormData) => {
     try {
+      // 기타 카테고리가 선택되고 텍스트가 있으면 기타 대신 텍스트를 사용
+      const processedCategories = selectedCategories.map((category) =>
+        category === '기타' && otherCategoryText.trim() ? otherCategoryText.trim() : category
+      )
+
       const formData = {
         contact: data.contact || null,
         coordinates,
         address,
         intensity: data.intensity,
         content: data.content,
-        categories: selectedCategories,
+        categories: processedCategories,
       }
 
       const response = await fetch('/api/feedback', {
@@ -117,6 +127,7 @@ export default function FeedbackPage() {
         // 폼 리셋
         setSelectedCategories([])
         setAddress('')
+        setOtherCategoryText('')
         setValue('contact', '')
         setValue('coordinates', '')
         setValue('address', '')
@@ -183,10 +194,10 @@ export default function FeedbackPage() {
               </div>
             </div>
 
-            {/* 사례 체크박스 */}
+            {/* 악취 유형 체크박스 */}
             <div>
               <label className="mb-3 block text-sm font-medium text-gray-700">
-                사례 <RequiredMaker />
+                악취 유형 <RequiredMaker />
               </label>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 {COMPLAINT_CATEGORIES.map((category) => (
@@ -201,6 +212,20 @@ export default function FeedbackPage() {
                   </label>
                 ))}
               </div>
+
+              {/* 기타 카테고리 선택 시 추가 입력 필드 */}
+              {selectedCategories.includes('기타') && (
+                <div className="mt-3">
+                  <label className="mb-2 block text-sm font-medium text-gray-700">기타 악취 유형을 입력해주세요</label>
+                  <input
+                    type="text"
+                    value={otherCategoryText}
+                    onChange={(e) => setOtherCategoryText(e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    placeholder="예: 화장품 냄새, 페인트 냄새 등"
+                  />
+                </div>
+              )}
             </div>
 
             {/* 민원 내용 */}
@@ -231,6 +256,7 @@ export default function FeedbackPage() {
                 onClick={() => {
                   setSelectedCategories([])
                   setAddress('')
+                  setOtherCategoryText('')
                   setValue('contact', '')
                   setValue('coordinates', '')
                   setValue('address', '')
