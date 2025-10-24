@@ -62,7 +62,7 @@ export default function FeedbackPage() {
             setValue('coordinates', coordString)
           },
           (error) => {
-            console.error('위치 정보 획득에 실패했습니다:', error)
+            console.log('위치 정보 획득 실패:', error)
             setCoordinates('위치 정보를 가져올 수 없습니다')
             setValue('coordinates', '위치 정보를 가져올 수 없습니다')
           }
@@ -150,7 +150,7 @@ export default function FeedbackPage() {
                 placeholder="전화번호 또는 이메일 주소"
               />
             </div>
-
+            {coordinates && <label className="text-gray-700D mb-2 block text-sm font-medium">GPS: {coordinates}</label>}
             {/* 주소 */}
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-700">
@@ -183,21 +183,6 @@ export default function FeedbackPage() {
               </div>
             </div>
 
-            {/* 민원 내용 */}
-            <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">
-                민원 내용
-                <RequiredMaker />
-              </label>
-              <textarea
-                {...register('content', { required: '민원 내용을 입력해주세요' })}
-                rows={4}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                placeholder="구체적인 민원 내용을 작성해주세요"
-              />
-              {errors.content && <p className="mt-1 text-sm text-red-600">{errors.content.message}</p>}
-            </div>
-
             {/* 사례 체크박스 */}
             <div>
               <label className="mb-3 block text-sm font-medium text-gray-700">
@@ -216,6 +201,21 @@ export default function FeedbackPage() {
                   </label>
                 ))}
               </div>
+            </div>
+
+            {/* 민원 내용 */}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                민원 내용
+                <RequiredMaker />
+              </label>
+              <textarea
+                {...register('content', { required: '민원 내용을 입력해주세요' })}
+                rows={4}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                placeholder="구체적인 민원 내용을 작성해주세요"
+              />
+              {errors.content && <p className="mt-1 text-sm text-red-600">{errors.content.message}</p>}
             </div>
 
             {/* 제출 버튼 */}
