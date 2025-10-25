@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error: any) {
-    console.error('API /api/asan-farm-test error:', error)
+    console.error('API /api/v2/asan-farm error:', error)
     return NextResponse.json(
       { error: 'Failed to fetch livestock farms', detail: error?.message || String(error) },
       { status: 500 }

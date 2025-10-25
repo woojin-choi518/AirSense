@@ -40,6 +40,8 @@ export const MARKER_SIZE = {
 
 export const MAX_MARKERS = 700
 
+export const API_VERSION = 'v2'
+
 export const COMPLAINT_CATEGORIES = [
   '가축·분뇨 냄새',
   '음식물 쓰레기 냄새',

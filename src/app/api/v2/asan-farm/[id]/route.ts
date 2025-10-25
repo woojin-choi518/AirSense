@@ -34,7 +34,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
     return NextResponse.json(formatted, { status: 200 })
   } catch (error) {
-    console.error('API /api/asan-farm-test/[id] error:', error)
+    console.error('API /api/v2/asan-farm/[id] error:', error)
     return NextResponse.json({ error: 'Failed to fetch farm details' }, { status: 500 })
   }
 }
