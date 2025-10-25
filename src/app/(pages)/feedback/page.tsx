@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { AddressSearchInput } from '@/components/feedback/AddressSearchInput'
+import { COMPLAINT_CATEGORIES, INTENSITY_LABELS } from '@/constants'
 import RequiredMaker from '@/utils/RequiredMaker'
 
 interface ComplaintFormData {
@@ -14,23 +15,6 @@ interface ComplaintFormData {
   content: string
   categories: string[]
 }
-
-const COMPLAINT_CATEGORIES = [
-  '가축·분뇨 냄새',
-  '음식물 쓰레기 냄새',
-  '하수·정화조 냄새',
-  '화학물질·공장 냄새',
-  '담배·생활 냄새',
-  '기타',
-]
-
-const INTENSITY_LABELS = [
-  '전혀 불편하지 않음',
-  '조금 불편함',
-  '보통 불편함',
-  '매우 불편함',
-  '매우 불편함 (짜증 및 두통 유발)',
-]
 
 export default function FeedbackPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
