@@ -27,15 +27,15 @@ export default function FeatureWrapper() {
 
       {/* Feature 전용 다크모드 영역 */}
       <div className={featureDark ? 'dark' : ''}>
-        <section className={` ${featureDark ? 'bg-[#360901]' : 'bg-white'}`}>
+        <section className={` ${featureDark ? 'bg-[#2d1300]' : 'bg-white'}`}>
           <FeatureSection {...featureData} isDark={featureDark} />
         </section>
 
         {/* Footer도 Feature 테마를 따르게 */}
         <footer
-          className={`py-6 text-center text-xs ${featureDark ? 'bg-[#360901] text-[#F5E6C8]' : 'bg-white text-gray-400'}`}
+          className={`py-6 text-center text-xs ${featureDark ? 'bg-[#2d1300] text-[#fef5f0]' : 'bg-white text-gray-400'}`}
         >
-          Data Source: EMP | NCBI | PAMC | KOPRI | SMU
+          Collaborators: Asan City, DeepAIBit
         </footer>
       </div>
     </>

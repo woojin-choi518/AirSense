@@ -308,7 +308,7 @@ export default function FarmMapPage() {
         title="축종 및 규모 필터"
         horizontal="left-4"
         topOffset={64}
-        widthClass="min-w-[200px] max-w-[24vw] sm:max-w-[20vw]"
+        widthClass="min-w-[140px] max-w-[40vw] sm:min-w-[200px] sm:max-w-[24vw] md:max-w-[20vw]"
       >
         <LivestockCombinedFilterPanel
           livestockTypes={allTypes}
@@ -353,7 +353,7 @@ export default function FarmMapPage() {
         title="날씨 정보"
         horizontal="right-4"
         topOffset={64}
-        widthClass="min-w-[230px] max-w-[24vw] sm:max-w-[20vw]"
+        widthClass="min-w-[160px] max-w-[40vw] sm:min-w-[230px] sm:max-w-[24vw] md:max-w-[20vw]"
       >
         <WeatherPanel
           onForecastSelect={handleForecastSelect}

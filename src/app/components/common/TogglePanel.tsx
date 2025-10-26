@@ -29,7 +29,8 @@ export default function TogglePanel({
         'fixed', // 모두 fixed
         horizontal, // left-4 or right-4
         widthClass,
-        'z-9999'
+        'z-[9999]',
+        'max-h-[90vh]' // 모바일에서 패널 높이 제한
       )}
       // ✅ 두 패널 모두 동일한 top 계산
       style={
@@ -62,10 +63,10 @@ export default function TogglePanel({
             'bg-gradient-to-br from-teal-800/20 to-blue-500/20',
             'shadow-lg backdrop-blur-md',
             'animate-in slide-in-from-top-2 fade-in duration-200',
-            'w-full'
+            'w-full overflow-hidden'
           )}
         >
-          <div className="max-h-[80vh] w-full overflow-y-auto p-1">{children}</div>
+          <div className="scrollbar-hide max-h-[calc(90vh-80px)] w-full overflow-y-auto p-1">{children}</div>
         </Collapsible.Content>
       </Collapsible.Root>
     </div>

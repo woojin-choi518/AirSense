@@ -3,7 +3,11 @@
 import { ArrowDown, ArrowUp, ArrowUpDown, Calendar, ChevronLeft, ChevronRight, Clock, List, MapPin } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
+<<<<<<< HEAD
 import { API_VERSION } from '@/app/constants'
+=======
+import Panel from '@/components/common/Panel'
+>>>>>>> feature/UI
 
 interface Complaint {
   id: number
@@ -126,12 +130,17 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
   }
 
   return (
+<<<<<<< HEAD
     <div className="mt-6 rounded-2xl border-2 border-red-300 bg-gradient-to-br from-red-50 to-red-100/50 p-6 shadow-lg">
       <div className="mb-4 flex items-center gap-3">
         <List className="h-6 w-6 text-red-600" />
         <h2 className="text-xl font-bold text-gray-800">민원 상세 정보</h2>
       </div>
       <div>
+=======
+    <div className="mt-6">
+      <Panel title="민원 상세 정보" icon={List} variant="red">
+>>>>>>> feature/UI
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <p className="text-gray-600">
@@ -321,7 +330,7 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
             </div>
           </div>
         </div>
-      </div>
+      </Panel>
     </div>
   )
 }
