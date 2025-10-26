@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Moon, Sun } from 'lucide-react'
+import { Map, Moon, Sun } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import type { ISourceOptions } from 'tsparticles-engine'
@@ -59,7 +59,7 @@ export default function HeroSection({ featureDark, onToggleFeatureDark }: Props)
             href="/asan"
             className="flex items-center gap-2 rounded-lg bg-orange-100/20 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-orange-400/20 sm:px-6 sm:py-3 sm:text-base"
           >
-            <span>🌍</span> 아산시 지도 바로가기
+            <Map className="h-4 w-4" /> 아산시 지도 바로가기
           </Link>
         </div>
 

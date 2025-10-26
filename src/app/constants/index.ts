@@ -1,4 +1,4 @@
-export const containerStyle = { width: '100vw', height: '100dvh' }
+export const containerStyle = { width: '100%', height: '100%' }
 export const ASAN_CENTER = { lat: 36.7855, lng: 127.102 }
 export const DEFAULT_ZOOM = 13
 
@@ -39,3 +39,22 @@ export const MARKER_SIZE = {
 }
 
 export const MAX_MARKERS = 700
+
+export const API_VERSION = 'v2'
+
+export const COMPLAINT_CATEGORIES = [
+  '가축·분뇨 냄새',
+  '음식물 쓰레기 냄새',
+  '하수·정화조 냄새',
+  '화학물질·공장 냄새',
+  '담배·생활 냄새',
+  '기타',
+]
+
+export const INTENSITY_LABELS = [
+  '전혀 불편하지 않음',
+  '조금 불편함',
+  '보통 불편함',
+  '매우 불편함',
+  '매우 불편함 (짜증 및 두통 유발)',
+]

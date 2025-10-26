@@ -12,6 +12,7 @@ import OdorOverlay from '@/components/asan/OdorOverlay'
 import WeatherPanel from '@/components/asan/WeatherPanel'
 import TogglePanel from '@/components/common/TogglePanel'
 import {
+  API_VERSION,
   ASAN_CENTER,
   containerStyle,
   DEFAULT_ZOOM,
@@ -187,7 +188,7 @@ export default function FarmMapPage() {
   // 농장 상세 정보 얻기
   const fetchFarmDetail = useCallback(async (farmId: number) => {
     try {
-      const response = await fetch(`/api/asan-farm/${farmId}`)
+      const response = await fetch(`/api/${API_VERSION}/asan-farm/${farmId}`)
       if (!response.ok) throw new Error(response.statusText)
       const farmDetail: LivestockFarm = await response.json()
       setSelectedFarmDetail(farmDetail)
@@ -219,7 +220,7 @@ export default function FarmMapPage() {
         params.set('types', selectedTypes.join(','))
       }
 
-      const response = await fetch(`/api/asan-farm?${params}`)
+      const response = await fetch(`/api/${API_VERSION}/asan-farm?${params}`)
       if (!response.ok) throw new Error(response.statusText)
 
       const data = await response.json()
@@ -307,7 +308,7 @@ export default function FarmMapPage() {
         title="축종 및 규모 필터"
         horizontal="left-4"
         topOffset={64}
-        widthClass="min-w-[200px] max-w-[24vw] sm:max-w-[20vw]"
+        widthClass="min-w-[140px] max-w-[40vw] sm:min-w-[200px] sm:max-w-[24vw] md:max-w-[20vw]"
       >
         <LivestockCombinedFilterPanel
           livestockTypes={allTypes}
@@ -352,7 +353,7 @@ export default function FarmMapPage() {
         title="날씨 정보"
         horizontal="right-4"
         topOffset={64}
-        widthClass="min-w-[230px] max-w-[24vw] sm:max-w-[20vw]"
+        widthClass="min-w-[160px] max-w-[40vw] sm:min-w-[230px] sm:max-w-[24vw] md:max-w-[20vw]"
       >
         <WeatherPanel
           onForecastSelect={handleForecastSelect}

@@ -36,7 +36,7 @@ export default function StatSection({
           onClick={() => setViewMode(viewMode === 'chart' ? 'list' : 'chart')}
           className="rounded-xl border border-gray-200/50 bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:from-gray-100 hover:to-gray-200 hover:text-gray-900"
         >
-          {viewMode === 'chart' ? '📊 목록 보기' : '📈 차트 보기'}
+          {viewMode === 'chart' ? '📊 목록' : '📈 차트'}
         </button>
       </div>
 
