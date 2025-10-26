@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { FilterPanelSkeleton, MapSkeleton, StatsPanelSkeleton } from '@/components/common/Skeleton'
 import ComplaintList from '@/components/complaints/ComplaintList'
 import ComplaintStatsPanel from '@/components/complaints/ComplaintStatsPanel'
-import { ASAN_CENTER } from '@/constants'
+import { API_VERSION, ASAN_CENTER } from '@/constants'
 
 const mapContainerStyle = {
   width: '100%',
@@ -70,7 +70,7 @@ export default function ComplaintsPage() {
         limit: '5000', // 한 번에 최대 5000개
       })
 
-      const response = await fetch(`/api/complaints?${params}`)
+      const response = await fetch(`/api/${API_VERSION}/complaints?${params}`)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }

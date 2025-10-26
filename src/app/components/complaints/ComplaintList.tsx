@@ -3,6 +3,8 @@
 import { ArrowDown, ArrowUp, ArrowUpDown, Calendar, ChevronLeft, ChevronRight, Clock, MapPin } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
+import { API_VERSION } from '@/app/constants'
+
 interface Complaint {
   id: number
   date: string
@@ -46,7 +48,7 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
         setComplaintsWithContent([])
         const complaintIds = complaints.map((c) => c.id)
 
-        const response = await fetch('/api/complaints/content', {
+        const response = await fetch(`/api/${API_VERSION}/complaints/content`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
