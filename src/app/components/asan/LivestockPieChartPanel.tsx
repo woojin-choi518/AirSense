@@ -16,7 +16,7 @@ interface Props {
 }
 
 export default function LivestockPieChartPanel({ farms }: Props) {
-  // ✅ 내부에 정의된 그룹핑 함수
+  //내부에 정의된 그룹핑 함수
   const chartData = useMemo(() => {
     const groupedCount: Record<string, number> = {}
 
