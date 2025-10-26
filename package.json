@@ -25,7 +25,8 @@
     "dev:with-db": "cross-env DATABASE_URL=$DATABASE_URL_DEV npm run dev",
     "dev:env": "dotenv -e .env.development -- npm run dev",
     "build:with-db": "cross-env DATABASE_URL=$DATABASE_URL_PROD npm run build",
-    "export:farms": "tsx scripts/export-livestock-farms.ts",  
+    "export:farms": "tsx scripts/export-livestock-farms.ts",
+    "export:complaints": "tsx scripts/export-complaints.ts",
     "seed:categories": "tsx scripts/seed-categories.ts" 
   },
   "dependencies": {
