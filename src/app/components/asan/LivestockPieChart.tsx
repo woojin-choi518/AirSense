@@ -16,12 +16,12 @@ export default function LivestockPieChart({ data }: { data: { name: string; valu
     }
   }, [])
 
-  const outerRadius = isMobile ? 70 : 90
+  const outerRadius = isMobile ? 55 : 70
 
   const groupedData = groupSmallCategories(data, 0.03) //기타 묶기 적용
 
   return (
-    <div className="font-pretendard h-[180px] w-full px-2 sm:h-[240px]">
+    <div className="font-pretendard h-[180px] w-full px-4 sm:h-[240px]">
       <ResponsiveContainer>
         <PieChart>
           <Pie
@@ -46,24 +46,42 @@ export default function LivestockPieChart({ data }: { data: { name: string; valu
               }
 
               const { name, percent, cx, cy, midAngle, innerRadius, outerRadius } = props as unknown as MyLabelProps
+
+              // 레이블을 차트 안쪽에 표시하도록 수정
               const RADIAN = Math.PI / 180
-              const radius = innerRadius + (outerRadius - innerRadius) * 1.2
+              const radius = innerRadius + (outerRadius - innerRadius) * 0.7 // 0.7로 줄여서 안쪽에 표시
               const x = cx + radius * Math.cos(-midAngle * RADIAN)
               const y = cy + radius * Math.sin(-midAngle * RADIAN)
+              const isLeft = x < cx
 
               return (
-                <text
-                  x={x}
-                  y={y}
-                  fill="#fff"
-                  textAnchor={x > cx ? 'start' : 'end'}
-                  dominantBaseline="central"
-                  fontFamily="Pretendard"
-                  fontWeight="bold"
-                  fontSize={isMobile ? '10px' : '12px'}
-                >
-                  {`${String(name)} (${percent !== undefined ? (percent * 100).toFixed(1) : '0.0'}%)`}
-                </text>
+                <g>
+                  <text
+                    x={x}
+                    y={y}
+                    fill="#fff"
+                    textAnchor={isLeft ? 'end' : 'start'}
+                    dominantBaseline="central"
+                    fontFamily="Pretendard"
+                    fontWeight="bold"
+                    fontSize={isMobile ? '10px' : '12px'}
+                    className="drop-shadow-md"
+                  >
+                    {`${String(name)}`}
+                  </text>
+                  <text
+                    x={x}
+                    y={y + (isMobile ? 12 : 14)}
+                    fill="#fff"
+                    textAnchor={isLeft ? 'end' : 'start'}
+                    dominantBaseline="central"
+                    fontFamily="Pretendard"
+                    fontSize={isMobile ? '9px' : '11px'}
+                    className="drop-shadow-md"
+                  >
+                    {`${percent !== undefined ? (percent * 100).toFixed(1) : '0.0'}%`}
+                  </text>
+                </g>
               )
             }}
             isAnimationActive

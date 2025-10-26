@@ -353,7 +353,7 @@ export default function FarmMapPage() {
         title="날씨 정보"
         horizontal="right-4"
         topOffset={64}
-        widthClass="min-w-[160px] max-w-[40vw] sm:min-w-[230px] sm:max-w-[24vw] md:max-w-[20vw]"
+        widthClass="min-w-[180px] max-w-[40vw] sm:min-w-[280px] sm:max-w-[26vw] md:max-w-[22vw]"
       >
         <WeatherPanel
           onForecastSelect={handleForecastSelect}
@@ -438,7 +438,7 @@ export default function FarmMapPage() {
         title="축종별 농가 통계"
         horizontal="left-4"
         bottomOffset={12}
-        widthClass="min-w-[300px] max-w-[300px] sm:min-w-[400px] sm:max-w-[400px]"
+        widthClass="min-w-[340px] max-w-[340px] sm:min-w-[480px] sm:max-w-[480px]"
       >
         <LivestockPieChartPanel farms={farms} />
       </TogglePanel>

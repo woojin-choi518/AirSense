@@ -36,7 +36,7 @@ export default function LivestockPieChartPanel({ farms }: Props) {
   }, [farms])
 
   return (
-    <div className="p-2">
+    <div className="p-4">
       <span className="font-sans text-sm font-bold text-white">데이터 수정일 : 2025-06-02</span>
       <PieChart data={chartData} />
     </div>
