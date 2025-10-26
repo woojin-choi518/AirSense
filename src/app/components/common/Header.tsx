@@ -90,9 +90,9 @@ export default function Header() {
                     active
                       ? pathname === '/'
                         ? scrolled
-                          ? 'bg-blue-50 font-medium text-blue-600'
+                          ? 'bg-emerald-50 font-medium text-emerald-600'
                           : 'bg-white/20 font-medium text-white'
-                        : 'bg-blue-50 font-medium text-blue-600'
+                        : 'bg-emerald-50 font-medium text-emerald-600'
                       : pathname === '/'
                         ? scrolled
                           ? 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'

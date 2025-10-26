@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
+import { API_VERSION } from '@/app/constants'
 import { getMonthStats, getRegionStats, getTimePeriodStats } from '@/utils/complaints'
 
 interface Complaint {
@@ -60,7 +61,7 @@ export const useComplaintData = () => {
         limit: '3000', // 한 번에 최대 5000개
       })
 
-      const response = await fetch(`/api/complaints?${params}`)
+      const response = await fetch(`/api/${API_VERSION}/complaints?${params}`)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }

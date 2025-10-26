@@ -19,11 +19,16 @@ interface Complaint {
   period: string | null
 }
 
+interface Cluster {
+  complaints: Complaint[]
+  count: number
+}
+
 interface ComplaintMapSectionProps {
   complaints: Complaint[]
   selectedClusterComplaints: Complaint[]
   showComplaintList: boolean
-  onMarkerClick: (cluster: { complaints: Complaint[]; count: number }) => void
+  onMarkerClick: (cluster: Cluster) => void
   onCloseComplaintList: () => void
 }
 
