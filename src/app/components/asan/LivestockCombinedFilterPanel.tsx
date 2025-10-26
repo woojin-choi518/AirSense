@@ -82,28 +82,28 @@ export default function LivestockCombinedFilterPanel({
       {/* 1) 🐷 가축 종 필터 */}
       <div>
         <h3 className="text-m mb-2 font-sans font-bold text-white">가축 선택</h3>
-        <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-          <label className="flex items-center space-x-2 rounded-full px-2 py-0.5 font-sans text-xs text-white hover:bg-teal-800/20">
+        <div className="flex flex-wrap gap-x-3 gap-y-1 sm:grid sm:grid-cols-2">
+          <label className="flex flex-shrink-0 items-center space-x-2 rounded-full px-2 py-0.5 font-sans text-xs text-white hover:bg-teal-800/20">
             <input
               type="checkbox"
               checked={allTypesSelected}
               onChange={onToggleAllTypes}
-              className="h-4 w-4 accent-teal-400 focus:ring-2 focus:ring-teal-300"
+              className="h-4 w-4 flex-shrink-0 accent-teal-400 focus:ring-2 focus:ring-teal-300"
             />
-            <span>전체</span>
+            <span className="whitespace-nowrap">전체</span>
           </label>
           {livestockTypes.map((type) => (
             <label
               key={type}
-              className="flex items-center space-x-2 rounded-full px-2 py-0.5 font-sans text-xs text-white hover:bg-teal-800/20"
+              className="flex flex-shrink-0 items-center space-x-2 rounded-full px-2 py-0.5 font-sans text-xs text-white hover:bg-teal-800/20"
             >
               <input
                 type="checkbox"
                 checked={selectedTypes.includes(type)}
                 onChange={() => onToggleType(type)}
-                className="h-4 w-4 accent-teal-400 focus:ring-2 focus:ring-teal-300"
+                className="h-4 w-4 flex-shrink-0 accent-teal-400 focus:ring-2 focus:ring-teal-300"
               />
-              <span>{type}</span>
+              <span className="whitespace-nowrap">{type}</span>
             </label>
           ))}
         </div>
@@ -122,12 +122,12 @@ export default function LivestockCombinedFilterPanel({
         </div>
 
         {/* 그룹 선택 탭 */}
-        <div className="mb-2 flex space-x-2 overflow-x-auto pb-1">
+        <div className="mb-2 flex flex-wrap gap-2 pb-1">
           {groups.map((group) => (
             <button
               key={group}
               onClick={() => setActiveGroup(group)}
-              className={`rounded-full px-2 py-1 text-xs font-medium ${
+              className={`flex-shrink-0 rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap ${
                 activeGroup === group
                   ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white'
                   : 'bg-teal-900/20 text-teal-200 hover:bg-teal-900/30'
@@ -161,11 +161,11 @@ export default function LivestockCombinedFilterPanel({
             />
           </Slider.Root>
 
-          <div className="flex justify-between px-1 text-sm font-semibold text-white">
+          <div className="flex flex-wrap gap-2 px-1 text-sm font-semibold text-white">
             {rs.map((r) => (
               <span
                 key={r.label}
-                className="rounded-full bg-gradient-to-r from-teal-900/20 to-blue-900/20 px-2 py-1 font-sans"
+                className="flex-shrink-0 rounded-full bg-gradient-to-r from-teal-900/20 to-blue-900/20 px-2 py-1 font-sans whitespace-nowrap"
               >
                 {r.label}
               </span>

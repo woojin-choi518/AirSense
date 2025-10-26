@@ -1,4 +1,4 @@
-export const containerStyle = { width: '100vw', height: '100dvh' }
+export const containerStyle = { width: '100%', height: '100%' }
 export const ASAN_CENTER = { lat: 36.7855, lng: 127.102 }
 export const DEFAULT_ZOOM = 13
 
