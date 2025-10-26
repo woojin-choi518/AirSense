@@ -1,9 +1,32 @@
 'use client'
 
 import axios from 'axios'
+import { Cloud, CloudRain, Moon, Sun, Wind } from 'lucide-react'
 import React, { useEffect, useMemo, useState } from 'react'
 
 import { WeatherPanelSkeleton } from '../common/Skeleton'
+
+// 날씨 아이콘 컴포넌트
+const WeatherIcon = ({ condition, isNight = false }: { condition: string; isNight?: boolean }) => {
+  const getIcon = () => {
+    if (isNight) {
+      return <Moon className="h-10 w-10 text-white/90 sm:h-16 sm:w-16" />
+    }
+
+    if (condition?.toLowerCase().includes('rain')) {
+      return <CloudRain className="h-10 w-10 text-white/90 sm:h-16 sm:w-16" />
+    }
+
+    if (condition?.toLowerCase().includes('cloud')) {
+      return <Cloud className="h-10 w-10 text-white/90 sm:h-16 sm:w-16" />
+    }
+
+    // Default: Sunny
+    return <Sun className="h-10 w-10 text-yellow-300 sm:h-16 sm:w-16" />
+  }
+
+  return <div className="flex items-center justify-center">{getIcon()}</div>
+}
 
 interface WeatherPanelProps {
   onForecastSelect?: (hourData: any) => void
@@ -39,8 +62,8 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
     const fetchForecast = async () => {
       try {
         const key = process.env.NEXT_PUBLIC_OPENWEATHERMAP_API_KEY!
-        const lat = 36.7998,
-          lon = 127.1375
+        const lat = 36.7822,
+          lon = 127.0006
         const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${key}&units=metric`
         const res = await axios.get(url)
         setForecastList(res.data.list)
@@ -119,13 +142,23 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
     })
   )
 
+  const getWeatherCondition = () => {
+    if (selIndex === 0) {
+      return current?.weather?.[0]?.main || 'Clear'
+    }
+    return selFc?.weather?.[0]?.main || 'Clear'
+  }
+
+  const weatherCondition = getWeatherCondition()
+  const isNight = new Date().getHours() >= 18 || new Date().getHours() < 6
+
   return (
-    <div className="max-h-[80vh] w-full overflow-y-auto p-2">
+    <div className="max-h-[80vh] w-full overflow-y-auto p-3 sm:p-4">
       {/* 슬라이더 */}
       {forecastList.length > 0 && (
-        <div className="space-y-1 p-1">
-          <div className="text-center text-sm text-white">
-            {selIndex === 0 ? '실시간' : `${selIndex * 3}시간 후 (${tickLabels[Math.floor(selIndex / tickStep)]})`}
+        <div className="mb-4 space-y-2 sm:mb-6">
+          <div className="text-center text-xs font-semibold text-white sm:text-sm">
+            <span className="text-xs font-semibold text-white sm:text-sm">악취 범위 예측 슬라이더</span>
           </div>
           <input
             type="range"
@@ -134,9 +167,9 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
             step={1}
             value={selIndex}
             onChange={(e) => onSelIndexChange(+e.target.value)}
-            className="w-full accent-teal-400"
+            className="w-full accent-blue-200"
           />
-          <div className="mt-2 grid grid-cols-5 text-center text-xs text-white">
+          <div className="mt-2 grid grid-cols-5 text-center text-[10px] text-white/80 sm:text-xs">
             {tickLabels.map((label, idx) => (
               <span key={idx}>{label}</span>
             ))}
@@ -144,73 +177,100 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
         </div>
       )}
 
-      {/* 데이터 블록 */}
-      {selIndex === 0 ? (
-        <div className="mb-4 flex flex-col items-center justify-center space-y-2">
-          <div className="w-full rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-center text-sm text-white">
-            {lastUpdated}
-          </div>
-          <div className="mb-4 w-full space-y-2">
-            <div className="rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-center text-sm text-white">
-              온도: {T}°C
+      {/* 메인 날씨 위젯 */}
+      <div className="mb-4 rounded-2xl bg-gradient-to-br from-blue-300 p-3 text-white shadow-xl sm:p-6">
+        {selIndex === 0 ? (
+          <>
+            {/* 현재 날씨 카드 */}
+            <div className="mb-2 text-xs opacity-90 sm:mb-3 sm:text-sm">
+              {current
+                ? new Date(current.dt * 1000).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }) +
+                  ' ' +
+                  new Date(current.dt * 1000).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+                : lastUpdated}
             </div>
-            <div className="rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-center text-sm text-white">
-              습도: {H}%
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <div className="mb-1 text-3xl font-bold sm:mb-2 sm:text-5xl">{T && Math.round(T)}°</div>
+                <div className="mb-3 min-h-[28px] text-sm leading-tight break-words opacity-90 sm:mb-4 sm:min-h-[40px] sm:text-base sm:text-lg">
+                  {current?.weather?.[0]?.description || '맑음'}
+                </div>
+              </div>
+              <div className="flex-shrink-0">
+                <WeatherIcon condition={weatherCondition} isNight={isNight} />
+              </div>
             </div>
-            <div className="flex items-center justify-center rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-sm text-white">
-              풍향:
-              <svg
-                className="mx-1 h-4 w-4"
-                style={{ transform: `rotate(${Wdir}deg)` }}
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M12 2l8 10h-6v8h-4v-8H4l8-10z" />
-              </svg>
-              ({Wdir}°)
-            </div>
-            <div className="rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-center text-sm text-white">
-              풍속: {Wsp} m/s
-            </div>
-            <div className="rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-center text-sm text-white">
-              강수량: {rain} mm
-            </div>
+          </>
+        ) : (
+          selFc && (
+            <>
+              <div className="mb-2 text-xs opacity-90 sm:mb-3 sm:text-sm">
+                {new Date(selFc.dt * 1000).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }) +
+                  ' ' +
+                  new Date(selFc.dt * 1000).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="mb-1 text-3xl font-bold sm:mb-2 sm:text-5xl">{Math.round(selFc.main.temp)}°</div>
+                  <div className="mb-3 min-h-[28px] text-sm leading-tight break-words opacity-90 sm:mb-4 sm:min-h-[40px] sm:text-base sm:text-lg">
+                    {selFc.weather?.[0]?.description || '맑음'}
+                  </div>
+                </div>
+                <div className="flex-shrink-0">
+                  <WeatherIcon condition={weatherCondition} isNight={isNight} />
+                </div>
+              </div>
+            </>
+          )
+        )}
+      </div>
+
+      {/* 세부 정보 카드들 */}
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
+        {/* 습도 */}
+        <div className="flex min-h-[85px] flex-col justify-between rounded-xl bg-gradient-to-br p-2 text-white backdrop-blur-sm sm:min-h-[100px] sm:p-4">
+          <div className="text-xs opacity-80">습도</div>
+          <div className="text-md font-bold sm:text-2xl">{selIndex === 0 ? H : selFc?.main?.humidity}%</div>
+        </div>
+
+        {/* 풍속 */}
+        <div className="flex min-h-[85px] flex-col justify-between rounded-xl bg-gradient-to-br p-2 text-white backdrop-blur-sm sm:min-h-[100px] sm:p-4">
+          <div className="text-xs opacity-80">풍속</div>
+          <div>
+            <span className="text-md font-bold sm:text-2xl">
+              {selIndex === 0 ? Wsp?.toFixed(1) : selFc?.wind?.speed?.toFixed(1) || 0}
+            </span>
+            <span className="text-[10px] sm:text-xs"> m/s</span>
           </div>
         </div>
-      ) : (
-        selFc && (
-          <div className="mb-4 flex flex-col items-center justify-center space-y-2">
-            <div className="w-full rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-center text-sm text-white">
-              {new Date(selFc.dt * 1000).toLocaleString('ko-KR')}
-            </div>
-            <div className="w-full rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-center text-sm text-white">
-              온도: {selFc.main.temp}°C
-            </div>
-            <div className="w-full rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-center text-sm text-white">
-              습도: {selFc.main.humidity}%
-            </div>
-            <div className="flex w-full items-center justify-center rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-sm text-white">
-              풍향:
-              <svg
-                className="mx-1 h-4 w-4"
-                style={{ transform: `rotate(${selFc.wind.deg}deg)` }}
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M12 2l8 10h-6v8h-4v-8H4l8-10z" />
-              </svg>
-              ({selFc.wind.deg}°)
-            </div>
-            <div className="w-full rounded-full bg-gradient-to-r from-teal-500/20 to-blue-500/20 p-2 text-center text-sm text-white">
-              풍속: {selFc.wind.speed} m/s
-            </div>
+
+        {/* 풍향 */}
+        <div className="flex min-h-[85px] flex-col justify-between rounded-xl bg-gradient-to-br p-2 text-white backdrop-blur-sm sm:min-h-[100px] sm:p-4">
+          <div className="text-xs opacity-80">풍향</div>
+          <div className="flex items-center gap-1">
+            <Wind
+              className="h-5 w-5 flex-shrink-0 sm:h-7 sm:w-7"
+              style={{
+                transform: `rotate(${((selIndex === 0 ? Wdir : selFc?.wind?.deg) || 0) - 90}deg)`,
+              }}
+            />
+            <span className="text-md font-bold sm:text-2xl">{(selIndex === 0 ? Wdir : selFc?.wind?.deg) || 0}°</span>
           </div>
-        )
-      )}
+        </div>
+
+        {/* 강수량 */}
+        <div className="flex min-h-[85px] flex-col justify-between rounded-xl bg-gradient-to-br p-2 text-white backdrop-blur-sm sm:min-h-[100px] sm:p-4">
+          <div className="text-xs opacity-80">강수량</div>
+          <div>
+            <span className="text-md font-bold sm:text-2xl">{selIndex === 0 ? rain : selFc?.rain?.['3h'] || 0}</span>
+            <span className="text-[10px] sm:text-xs"> mm</span>
+          </div>
+        </div>
+      </div>
 
       {/* 안내 문구 */}
-      <div className="rounded-lg border-2 border-rose-600 bg-sky-50 p-2 text-center text-sm font-bold text-rose-600">
-        {guidance}
+      <div className="mt-4 rounded-xl bg-gradient-to-br p-3 text-center text-xs font-semibold text-white backdrop-blur-sm sm:p-4 sm:text-sm">
+        <p className="break-words">{guidance}</p>
       </div>
     </div>
   )

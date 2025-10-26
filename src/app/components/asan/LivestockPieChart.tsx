@@ -16,12 +16,12 @@ export default function LivestockPieChart({ data }: { data: { name: string; valu
     }
   }, [])
 
-  const outerRadius = isMobile ? 70 : 90
+  const outerRadius = isMobile ? 55 : 70
 
   const groupedData = groupSmallCategories(data, 0.03) //기타 묶기 적용
 
   return (
-    <div className="font-pretendard h-[180px] w-full px-2 sm:h-[240px]">
+    <div className="font-pretendard h-[180px] w-full px-4 sm:h-[240px]">
       <ResponsiveContainer>
         <PieChart>
           <Pie
@@ -31,8 +31,11 @@ export default function LivestockPieChart({ data }: { data: { name: string; valu
             cx="50%"
             cy="50%"
             outerRadius={outerRadius}
-            innerRadius={40}
+            innerRadius={30}
             fill="#8884d8"
+            paddingAngle={5}
+            strokeWidth={1}
+            stroke="#ffffff"
             labelLine={false}
             label={(props: PieLabelRenderProps) => {
               type MyLabelProps = {
@@ -46,23 +49,32 @@ export default function LivestockPieChart({ data }: { data: { name: string; valu
               }
 
               const { name, percent, cx, cy, midAngle, innerRadius, outerRadius } = props as unknown as MyLabelProps
+
+              // 작은 세그먼트는 레이블 표시 안함
+              if (percent && percent < 0.01) return null
+
+              // 레이블을 차트 중앙에 표시
               const RADIAN = Math.PI / 180
-              const radius = innerRadius + (outerRadius - innerRadius) * 1.2
+              const radius = (innerRadius + outerRadius) / 2 // 중앙
               const x = cx + radius * Math.cos(-midAngle * RADIAN)
               const y = cy + radius * Math.sin(-midAngle * RADIAN)
+
+              // 한 줄로 표시
+              const labelText = `${String(name)} ${percent !== undefined ? (percent * 100).toFixed(1) : '0.0'}%`
 
               return (
                 <text
                   x={x}
                   y={y}
-                  fill="#fff"
-                  textAnchor={x > cx ? 'start' : 'end'}
-                  dominantBaseline="central"
+                  fill="#ffffff"
+                  textAnchor="start"
+                  dominantBaseline="hanging"
+                  fontWeight="Bold"
                   fontFamily="Pretendard"
-                  fontWeight="bold"
                   fontSize={isMobile ? '10px' : '12px'}
+                  className="drop-shadow-lg"
                 >
-                  {`${String(name)} (${percent !== undefined ? (percent * 100).toFixed(1) : '0.0'}%)`}
+                  {labelText}
                 </text>
               )
             }}
@@ -75,9 +87,9 @@ export default function LivestockPieChart({ data }: { data: { name: string; valu
           </Pie>
           <Tooltip
             contentStyle={{
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              backgroundColor: 'rgba(241, 245, 253, 0.95)',
               borderRadius: '12px',
-              border: '1px solid #45B7D1',
+              border: '1px solid rgba(255, 255, 255, 0.9)',
             }}
             itemStyle={{ color: '#333' }}
             formatter={(value: number) => `${value} 농가`}
@@ -87,9 +99,9 @@ export default function LivestockPieChart({ data }: { data: { name: string; valu
             verticalAlign="bottom"
             align="center"
             wrapperStyle={{
-              fontSize: '12px',
+              fontSize: '10px',
               fontWeight: 600,
-              marginTop: 8,
+              marginTop: 12,
               fontFamily: 'Pretendard', // 범례에도 Pretendard 적용
             }}
           />

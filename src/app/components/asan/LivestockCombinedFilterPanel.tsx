@@ -43,6 +43,7 @@ export default function LivestockCombinedFilterPanel({
 
   const [activeGroup, setActiveGroup] = useState(groups[0] || '')
   const [rangeMap, setRangeMap] = useState<Record<string, [number, number]>>(initialRangeMap)
+  const [isLivestockExpanded, setIsLivestockExpanded] = useState(true)
 
   // ✅ onScaleChange는 렌더 중이 아니라 커밋 이후에만 호출
   // 이전 rangeMap을 기억해 변경된 그룹만 통지
@@ -79,43 +80,81 @@ export default function LivestockCombinedFilterPanel({
 
   return (
     <div className="space-y-6 p-4">
-      {/* 1) 🐷 가축 종 필터 */}
+      {/* 1) 가축 종 필터 */}
       <div>
-        <h3 className="text-m mb-2 font-sans font-bold text-white">가축 선택</h3>
-        <div className="flex flex-wrap gap-x-3 gap-y-1 sm:grid sm:grid-cols-2">
-          <label className="flex flex-shrink-0 items-center space-x-2 rounded-full px-2 py-0.5 font-sans text-xs text-white hover:bg-teal-800/20">
-            <input
-              type="checkbox"
-              checked={allTypesSelected}
-              onChange={onToggleAllTypes}
-              className="h-4 w-4 flex-shrink-0 accent-teal-400 focus:ring-2 focus:ring-teal-300"
-            />
-            <span className="whitespace-nowrap">전체</span>
-          </label>
-          {livestockTypes.map((type) => (
-            <label
-              key={type}
-              className="flex flex-shrink-0 items-center space-x-2 rounded-full px-2 py-0.5 font-sans text-xs text-white hover:bg-teal-800/20"
+        <div className="mb-2 flex items-center justify-between">
+          <h3 className="text-m font-sans font-bold text-white">가축 선택</h3>
+          <button
+            onClick={() => setIsLivestockExpanded(!isLivestockExpanded)}
+            className="text-white transition-colors hover:text-blue-300"
+          >
+            <svg
+              className={`h-5 w-5 transition-transform ${isLivestockExpanded ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              <input
-                type="checkbox"
-                checked={selectedTypes.includes(type)}
-                onChange={() => onToggleType(type)}
-                className="h-4 w-4 flex-shrink-0 accent-teal-400 focus:ring-2 focus:ring-teal-300"
-              />
-              <span className="whitespace-nowrap">{type}</span>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        </div>
+        <div
+          className={`overflow-hidden transition-all duration-300 ${
+            isLivestockExpanded ? 'max-h-[300px] opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <div className="flex flex-wrap gap-x-3 gap-y-1 sm:grid sm:grid-cols-2">
+            <label className="flex flex-shrink-0 items-center space-x-2 rounded-full px-2 py-0.5 font-sans text-xs text-white hover:bg-teal-800/20">
+              <div className="relative h-4 w-4 flex-shrink-0">
+                <input
+                  type="checkbox"
+                  checked={allTypesSelected}
+                  onChange={onToggleAllTypes}
+                  className="peer h-full w-full appearance-none rounded border-2 border-gray-400 checked:border-blue-300 checked:bg-blue-300 focus:ring-2 focus:ring-sky-300"
+                />
+                <svg
+                  className="pointer-events-none absolute top-0 left-0 h-full w-full fill-none stroke-white stroke-[3] opacity-0 transition-opacity peer-checked:opacity-100"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M5 12l5 5l10 -10" />
+                </svg>
+              </div>
+              <span className="whitespace-nowrap">전체</span>
             </label>
-          ))}
+            {livestockTypes.map((type) => (
+              <label
+                key={type}
+                className="flex flex-shrink-0 items-center space-x-2 rounded-full px-2 py-0.5 font-sans text-xs text-white hover:bg-teal-800/20"
+              >
+                <div className="relative h-4 w-4 flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={selectedTypes.includes(type)}
+                    onChange={() => onToggleType(type)}
+                    className="peer h-full w-full appearance-none rounded border-2 border-gray-400 checked:border-blue-300 checked:bg-blue-300 focus:ring-2 focus:ring-sky-300"
+                  />
+
+                  <svg
+                    className="pointer-events-none absolute top-0 left-0 h-full w-full fill-none stroke-white stroke-[3] opacity-0 transition-opacity peer-checked:opacity-100"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M5 12l5 5l10 -10" />
+                  </svg>
+                </div>
+                <span className="whitespace-nowrap">{type}</span>
+              </label>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* 2) 📏 규모 필터 + 초기화 버튼 */}
       <div>
-        <div className="mb-2 flex items-center justify-between">
-          <h3 className="text-m font-sans font-bold text-white">축사 규모</h3>
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-md font-sans font-bold text-white">축사 규모</h3>
           <button
             onClick={resetAll}
-            className="rounded-full border-2 border-teal-300 p-1.5 text-xs font-semibold text-white hover:bg-teal-500/20 hover:text-white"
+            className="rounded-full border-2 border-blue-400 bg-blue-400 p-1.5 text-[10px] font-semibold text-white hover:border-blue-400/80 hover:bg-blue-400/80"
           >
             초기화
           </button>
@@ -127,10 +166,10 @@ export default function LivestockCombinedFilterPanel({
             <button
               key={group}
               onClick={() => setActiveGroup(group)}
-              className={`flex-shrink-0 rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap ${
+              className={`flex-shrink-0 rounded-full px-3 py-1 text-xs font-bold whitespace-nowrap ${
                 activeGroup === group
-                  ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white'
-                  : 'bg-teal-900/20 text-teal-200 hover:bg-teal-900/30'
+                  ? 'bg-gradient-to-r from-blue-400 to-blue-400 text-white backdrop-blur-sm'
+                  : 'bg-blue-300/20 text-white backdrop-blur-sm hover:bg-blue-300/30'
               }`}
             >
               {group}
@@ -149,23 +188,23 @@ export default function LivestockCombinedFilterPanel({
             onValueChange={(v) => handleChange(activeGroup, v as [number, number])}
           >
             <Slider.Track className="relative h-2 flex-1 rounded-full bg-gray-200">
-              <Slider.Range className="absolute h-full rounded-full bg-gradient-to-r from-teal-400 to-blue-500 transition-all duration-300" />
+              <Slider.Range className="absolute h-full rounded-full bg-gradient-to-r from-sky-300/90 to-blue-400/90 transition-all duration-300" />
             </Slider.Track>
             <Slider.Thumb
-              className="block h-4 w-4 rounded-full bg-teal-500 shadow-md transition-all duration-200 hover:bg-teal-600 focus:ring-2 focus:ring-teal-300 focus:outline-none"
+              className="block h-4 w-4 rounded-full bg-white shadow-md transition-all duration-200 hover:bg-white focus:ring-2 focus:ring-blue-200 focus:outline-none"
               aria-label="Minimum value"
             />
             <Slider.Thumb
-              className="block h-4 w-4 rounded-full bg-teal-500 shadow-md transition-all duration-200 hover:bg-teal-600 focus:ring-2 focus:ring-teal-300 focus:outline-none"
+              className="block h-4 w-4 rounded-full bg-white shadow-md transition-all duration-200 hover:bg-white focus:ring-2 focus:ring-blue-200 focus:outline-none"
               aria-label="Maximum value"
             />
           </Slider.Root>
 
-          <div className="flex flex-wrap gap-2 px-1 text-sm font-semibold text-white">
+          <div className="flex flex-wrap gap-2 px-1 text-[10px] font-semibold text-white sm:text-xs">
             {rs.map((r) => (
               <span
                 key={r.label}
-                className="flex-shrink-0 rounded-full bg-gradient-to-r from-teal-900/20 to-blue-900/20 px-2 py-1 font-sans whitespace-nowrap"
+                className="flex-shrink-0 rounded-full px-2 py-1 font-sans whitespace-nowrap backdrop-blur-sm"
               >
                 {r.label}
               </span>
@@ -183,7 +222,7 @@ export default function LivestockCombinedFilterPanel({
             aria-checked={showOdor}
             onClick={onToggleOdor}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              showOdor ? 'bg-teal-500' : 'bg-gray-400'
+              showOdor ? 'bg-blue-400/50' : 'bg-gray-400'
             }`}
           >
             <span

@@ -47,7 +47,7 @@ export default function TogglePanel({
             'h-12 overflow-hidden px-5 text-ellipsis whitespace-nowrap',
             'w-full rounded-full shadow-md select-none',
             'bg-gradient-to-r from-teal-800/20 to-blue-500/20',
-            'border-2 border-teal-300 backdrop-blur-md',
+            'border-2 border-white/30 backdrop-blur-md',
             'flex items-center justify-between font-bold text-white',
             'transition-[transform,opacity,box-shadow] duration-300'
           )}
@@ -59,7 +59,7 @@ export default function TogglePanel({
         {/* 본문 */}
         <Collapsible.Content
           className={cn(
-            'mt-2 rounded-2xl border-2 border-teal-300',
+            'mt-2 rounded-2xl border-2 border-white/30',
             'bg-gradient-to-br from-teal-800/20 to-blue-500/20',
             'shadow-lg backdrop-blur-md',
             'animate-in slide-in-from-top-2 fade-in duration-200',
