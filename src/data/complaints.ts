@@ -47,4 +47,3 @@ export function convertToComplaint(complaintData: ComplaintData) {
 
 // 全てのデータを変換
 export const CONVERTED_COMPLAINTS = COMPLAINTS.map(convertToComplaint)
-
