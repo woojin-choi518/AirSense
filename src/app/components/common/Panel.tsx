@@ -13,11 +13,11 @@ interface PanelProps {
 }
 
 const variantStyles = {
-  default: 'border-white/20 bg-white/80',
-  blue: 'border-blue-100/50 bg-gradient-to-br from-blue-50/80 to-indigo-50/80',
-  red: 'border-red-100/50 bg-gradient-to-br from-red-50/80 to-orange-50/80',
-  green: 'border-green-100/50 bg-gradient-to-br from-green-50/80 to-emerald-50/80',
-  purple: 'border-purple-100/50 bg-gradient-to-br from-purple-50/80 to-violet-50/80',
+  default: 'border-gray-200 bg-white',
+  blue: 'border-blue-200 bg-blue-50',
+  red: 'border-red-200 bg-red-50',
+  green: 'border-green-200 bg-green-50',
+  purple: 'border-purple-200 bg-purple-50',
 }
 
 export default function Panel({
@@ -28,14 +28,14 @@ export default function Panel({
   variant = 'default',
   textAlign = 'left',
 }: PanelProps) {
-  const baseStyles = 'rounded-xl border p-6 shadow-lg backdrop-blur-sm'
+  const baseStyles = 'rounded-xl border p-6 shadow-sm'
   const variantStyle = variantStyles[variant]
   const textAlignStyle = textAlign === 'center' ? 'text-center' : textAlign === 'right' ? 'text-right' : 'text-left'
 
   return (
     <div className={`${baseStyles} ${variantStyle} ${className}`}>
-      <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-gray-800">
-        <Icon className="h-5 w-5 text-emerald-600" />
+      <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900">
+        <Icon className="h-5 w-5 text-gray-600" />
         {title}
       </h2>
       <div className={textAlignStyle}>{children}</div>

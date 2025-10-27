@@ -54,7 +54,7 @@ export default function Header() {
           pathname === '/'
             ? scrolled
               ? 'bg-white text-black shadow-sm'
-              : 'bg-transparent text-white'
+              : 'bg-transparent text-stone-700'
             : 'bg-white text-black shadow-sm'
         } `}
       >
@@ -70,7 +70,7 @@ export default function Header() {
             />
             <span
               className={`text-xl font-bold ${
-                pathname === '/' ? (scrolled ? 'text-black' : 'text-white') : 'text-black'
+                pathname === '/' ? (scrolled ? 'text-black' : 'text-stone-600') : 'text-black'
               } hidden sm:block`}
             >
               AI-SmartAir
@@ -86,22 +86,22 @@ export default function Header() {
                   prefetch={false}
                   key={href}
                   href={href}
-                  className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-all duration-200 ${
+                  className={`flex items-center gap-2 rounded-full px-3 py-2 transition-all duration-200 ${
                     active
                       ? pathname === '/'
                         ? scrolled
-                          ? 'bg-emerald-50 font-medium text-emerald-600'
+                          ? 'font-medium text-emerald-600'
                           : 'bg-white/20 font-medium text-white'
-                        : 'bg-emerald-50 font-medium text-emerald-600'
+                        : 'font-medium text-emerald-600'
                       : pathname === '/'
                         ? scrolled
                           ? 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                          : 'text-white hover:bg-white/10 hover:text-white'
+                          : 'bg-stone-500/60 text-white hover:bg-white/10 hover:text-white'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                 >
                   <Icon className="h-4 w-4" />
-                  <span className="text-sm">{label}</span>
+                  <span className="text-sm font-bold">{label}</span>
                 </Link>
               )
             })}
@@ -170,7 +170,7 @@ export default function Header() {
                 className="rounded-lg p-2 transition-colors duration-200 hover:bg-gray-100"
                 aria-label="메뉴 닫기"
               >
-                <X className="h-6 w-6 text-gray-600" />
+                <X className="h-6 w-6 text-stone-500" />
               </button>
             </div>
 
