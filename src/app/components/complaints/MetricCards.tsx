@@ -86,8 +86,8 @@ export default function MetricCards({ stats, dateRange }: MetricCardsProps) {
             >
               {isIncreasing ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
               <span className="ml-1 text-[9px] text-emerald-600 sm:text-xs">
-                {isIncreasing ? '+' : ''}
-                {Math.abs(monthDiff)}건 vs {prevMonth.month}월
+                {isIncreasing ? '' : ''}
+                {Math.abs(monthDiff)}건
               </span>
             </div>
           )}
