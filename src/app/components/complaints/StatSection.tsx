@@ -1,5 +1,6 @@
 'use client'
 
+import { BarChart3, List } from 'lucide-react'
 import { useState } from 'react'
 
 import StatChart, { ChartConfig, ChartData } from './StatChart'
@@ -34,9 +35,19 @@ export default function StatSection({
         </h3>
         <button
           onClick={() => setViewMode(viewMode === 'chart' ? 'list' : 'chart')}
-          className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50"
+          className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50"
         >
-          {viewMode === 'chart' ? '📊 목록' : '📈 차트'}
+          {viewMode === 'chart' ? (
+            <>
+              <List className="h-4 w-4" />
+              목록
+            </>
+          ) : (
+            <>
+              <BarChart3 className="h-4 w-4" />
+              차트
+            </>
+          )}
         </button>
       </div>
 

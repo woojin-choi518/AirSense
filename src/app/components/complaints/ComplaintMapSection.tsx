@@ -32,10 +32,10 @@ interface ComplaintMapSectionProps {
   onCloseComplaintList: () => void
 }
 
-const mapContainerStyle = {
+const getMapContainerStyle = () => ({
   width: '100%',
-  height: '500px',
-}
+  height: '100%',
+})
 
 const mapOptions = {
   disableDefaultUI: false,
@@ -57,35 +57,39 @@ export default function ComplaintMapSection({
   const clusteredMarkers = createClusteredMarkers(complaints.filter((complaint) => complaint.lat && complaint.lng))
 
   return (
-    <Panel title="민원 발생 위치" icon={MapPin}>
-      <div className="overflow-hidden rounded-lg shadow-lg">
-        <GoogleMap mapContainerStyle={mapContainerStyle} center={ASAN_CENTER} zoom={12} options={mapOptions}>
-          {clusteredMarkers.map((cluster, index) => (
-            <Marker
-              key={`cluster-${index}`}
-              position={cluster.position}
-              title={`${cluster.count}건의 민원`}
-              onClick={() => onMarkerClick(cluster)}
-              icon={{
-                path: google.maps.SymbolPath.CIRCLE,
-                scale: getMarkerScale(cluster.count),
-                fillColor: '#e34343',
-                fillOpacity: 0.8,
-                strokeWeight: 0,
-              }}
-              label={cluster.count > 1 ? cluster.count.toString() : ''}
-            />
-          ))}
-        </GoogleMap>
+    <Panel title="민원 발생 위치" icon={MapPin} className="flex flex-col lg:h-full">
+      <div className="flex min-h-0 flex-1 flex-shrink">
+        <div className="h-[500px] w-full overflow-hidden rounded-lg shadow-lg lg:h-full">
+          <GoogleMap mapContainerStyle={getMapContainerStyle()} center={ASAN_CENTER} zoom={12} options={mapOptions}>
+            {clusteredMarkers.map((cluster, index) => (
+              <Marker
+                key={`cluster-${index}`}
+                position={cluster.position}
+                title={`${cluster.count}건의 민원`}
+                onClick={() => onMarkerClick(cluster)}
+                icon={{
+                  path: google.maps.SymbolPath.CIRCLE,
+                  scale: getMarkerScale(cluster.count),
+                  fillColor: '#e34343',
+                  fillOpacity: 0.8,
+                  strokeWeight: 0,
+                }}
+                label={cluster.count > 1 ? cluster.count.toString() : ''}
+              />
+            ))}
+          </GoogleMap>
+        </div>
       </div>
 
       {/* 민원 리스트 인라인 표시 */}
-      <ComplaintList
-        complaints={selectedClusterComplaints}
-        totalCount={selectedClusterComplaints.length}
-        onClose={onCloseComplaintList}
-        isVisible={showComplaintList}
-      />
+      <div>
+        <ComplaintList
+          complaints={selectedClusterComplaints}
+          totalCount={selectedClusterComplaints.length}
+          onClose={onCloseComplaintList}
+          isVisible={showComplaintList}
+        />
+      </div>
     </Panel>
   )
 }

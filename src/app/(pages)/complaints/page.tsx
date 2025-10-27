@@ -71,9 +71,9 @@ export default function ComplaintsPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 lg:items-stretch">
           {/* Map Section */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 lg:h-full">
             {loading ? (
               <MapSkeleton />
             ) : (
@@ -88,7 +88,7 @@ export default function ComplaintsPage() {
           </div>
 
           {/* Statistics Section */}
-          <div className="space-y-6">
+          <div className="flex flex-col lg:h-full">
             {loading ? (
               <StatsPanelSkeleton />
             ) : (
@@ -98,13 +98,13 @@ export default function ComplaintsPage() {
                   regionChart: {
                     defaultView: 'chart',
                     showTrend: true,
-                    height: 256,
+                    height: 260,
                     maxItems: 5,
                   },
                   monthChart: {
                     defaultView: 'chart',
                     showTrend: true,
-                    height: 256,
+                    height: 260,
                   },
                   showTotal: true,
                 }}
