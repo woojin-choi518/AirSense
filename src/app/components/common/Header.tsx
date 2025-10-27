@@ -73,7 +73,7 @@ export default function Header() {
                 pathname === '/' ? (scrolled ? 'text-black' : 'text-white') : 'text-black'
               } hidden sm:block`}
             >
-              AirSense
+              AI-SmartAir
             </span>
           </Link>
 
@@ -163,7 +163,7 @@ export default function Header() {
                   height={32}
                   className="object-contain"
                 />
-                <span className="text-lg font-bold text-black">AirSense</span>
+                <span className="text-lg font-bold text-black">Smart Air Asan</span>
               </Link>
               <button
                 onClick={() => setMobileMenuOpen(false)}

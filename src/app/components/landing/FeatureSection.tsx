@@ -56,7 +56,7 @@ export default function FeatureSection({
       whileInView={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6 }}
       viewport={{ once: true, margin: '100px' }}
-      className="py-16"
+      className="overflow-x-hidden py-16"
     >
       <div className="mx-auto max-w-6xl px-4">
         {/* 모바일 전용 */}
