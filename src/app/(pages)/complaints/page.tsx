@@ -45,7 +45,7 @@ export default function ComplaintsPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-emerald-50/30 py-8">
       <div className="mx-auto max-w-7xl px-4">
         {/* Page Header */}
-        <div className="mb-8">
+        <div className="center mb-8 rounded-xl border border-gray-200 bg-white p-6 text-center shadow-sm">
           <h1 className="mb-2 text-4xl font-bold text-gray-900">민원 관리 시스템</h1>
           <p className="text-gray-600">아산시 민원 발생 현황을 확인하고 분석하세요</p>
         </div>

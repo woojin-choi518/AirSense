@@ -33,7 +33,7 @@ export default function MetricCards({ stats, dateRange }: MetricCardsProps) {
     'flex flex-col justify-between rounded-xl bg-white p-2 shadow-sm transition-all hover:shadow sm:p-4 md:p-3'
   const titleStyles = 'text-[10px] font-medium text-gray-700 sm:text-xs md:text-sm'
   const valueStyles = 'text-sm font-bold text-gray-900 sm:text-2xl md:text-3xl'
-  const subTextStyles = 'text-[9px] text-gray-500 sm:text-xs'
+  const subTextStyles = 'text-[9px] text-emerald-600 sm:text-xs font-bold'
 
   return (
     <div className="mb-8 grid grid-cols-4 gap-1 sm:gap-3 md:gap-4">
@@ -65,7 +65,7 @@ export default function MetricCards({ stats, dateRange }: MetricCardsProps) {
         <div className="space-y-0.5">
           <div className={valueStyles}>{stats.byRegion?.[0]?.count || 0}</div>
           {stats.byRegion?.[0]?.region && (
-            <p className="text-[9px] text-gray-600 sm:text-xs">{stats.byRegion[0].region}</p>
+            <p className="text-[9px] font-bold text-emerald-600 sm:text-xs">{stats.byRegion[0].region}</p>
           )}
         </div>
       </div>
@@ -85,7 +85,7 @@ export default function MetricCards({ stats, dateRange }: MetricCardsProps) {
               }`}
             >
               {isIncreasing ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-              <span className="ml-1 text-[9px] text-emerald-600 sm:text-xs">
+              <span className="ml-1 text-[9px] font-bold text-emerald-600 sm:text-xs">
                 {isIncreasing ? '' : ''}
                 {Math.abs(monthDiff)}건
               </span>

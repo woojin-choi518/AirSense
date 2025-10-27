@@ -131,8 +131,8 @@ export default function FeedbackPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-emerald-50/30 py-8">
       <div className="mx-auto max-w-2xl px-4">
-        <div className="rounded-lg border border-black/20 bg-white/80 p-6 shadow-lg backdrop-blur-sm">
-          <h1 className="mb-6 text-center text-2xl font-bold text-gray-900">민원 접수</h1>
+        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <h1 className="mb-6 text-center text-4xl font-bold text-gray-900">민원 접수</h1>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* 연락처 */}
@@ -141,7 +141,7 @@ export default function FeedbackPage() {
               <input
                 type="text"
                 {...register('contact')}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm transition-all duration-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
                 placeholder="전화번호 또는 이메일 주소"
               />
             </div>
@@ -205,7 +205,7 @@ export default function FeedbackPage() {
                     type="text"
                     value={otherCategoryText}
                     onChange={(e) => setOtherCategoryText(e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm transition-all duration-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
                     placeholder="예: 화장품 냄새, 페인트 냄새 등"
                   />
                 </div>
@@ -221,7 +221,7 @@ export default function FeedbackPage() {
               <textarea
                 {...register('content', { required: '민원 내용을 입력해주세요' })}
                 rows={4}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm transition-all duration-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
                 placeholder="구체적인 민원 내용을 작성해주세요"
               />
               {errors.content && <p className="mt-1 text-sm text-red-600">{errors.content.message}</p>}
@@ -231,7 +231,7 @@ export default function FeedbackPage() {
             <div className="flex gap-4 pt-4">
               <button
                 type="submit"
-                className="flex-1 rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="flex-1 rounded-xl bg-blue-600 px-6 py-3 font-medium text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
               >
                 민원 제출
               </button>
@@ -247,9 +247,9 @@ export default function FeedbackPage() {
                   setValue('intensity', 1)
                   setValue('content', '')
                 }}
-                className="rounded-md bg-gray-300 px-6 py-2 text-gray-700 hover:bg-gray-400 focus:ring-2 focus:ring-gray-500 focus:outline-none"
+                className="rounded-xl bg-gray-200 px-6 py-3 text-gray-700 shadow-sm transition-all hover:bg-gray-300 hover:shadow-md focus:ring-2 focus:ring-gray-400 focus:outline-none"
               >
-                리셋
+                초기화
               </button>
             </div>
           </form>
