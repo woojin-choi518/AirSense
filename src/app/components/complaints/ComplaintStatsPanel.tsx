@@ -1,8 +1,6 @@
 'use client'
 
-import { BarChart3, Calendar, TrendingUp } from 'lucide-react'
-
-import Panel from '@/components/common/Panel'
+import { Calendar, TrendingUp } from 'lucide-react'
 
 import { ChartConfig, ChartData } from './StatChart'
 import StatSection from './StatSection'
@@ -88,18 +86,6 @@ export default function ComplaintStatsPanel({ stats, config = {} }: ComplaintSta
 
   return (
     <div className="space-y-6">
-      {/* 총 민원 건수 (모던 그레이-블루 그라데이션) */}
-      {config.showTotal !== false && (
-        <Panel title="총 민원 건수" icon={BarChart3} variant="default" textAlign="left">
-          <div>
-            <div className="bg-gradient-to-r from-slate-600 via-slate-500 to-indigo-600 bg-clip-text text-4xl font-bold text-transparent">
-              {stats.total || 0}
-            </div>
-            <p className="mt-2 text-sm font-medium text-gray-500">건</p>
-          </div>
-        </Panel>
-      )}
-
       {/* 지역별 통계 */}
       <StatSection
         title={regionConfig.title}

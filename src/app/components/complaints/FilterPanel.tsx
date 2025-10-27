@@ -31,8 +31,8 @@ export default function FilterPanel({
   stats,
 }: FilterPanelProps) {
   return (
-    <Panel title="범위 설정" icon={Filter}>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+    <Panel title="범위 설정" icon={Filter} variant="default">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {/* 날짜 범위 */}
         <div>
           <label className="mb-2 block text-sm font-medium text-gray-700">
@@ -44,13 +44,13 @@ export default function FilterPanel({
               type="date"
               value={dateRange.start}
               onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-              className="flex-1 rounded-lg border border-gray-300 bg-white/50 px-3 py-2 text-sm transition-all duration-200 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:outline-none"
+              className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm transition-all duration-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
             />
             <input
               type="date"
               value={dateRange.end}
               onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-              className="flex-1 rounded-lg border border-gray-300 bg-white/50 px-3 py-2 text-sm transition-all duration-200 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:outline-none"
+              className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm transition-all duration-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
             />
           </div>
         </div>
@@ -64,7 +64,7 @@ export default function FilterPanel({
           <select
             value={selectedRegion}
             onChange={(e) => setSelectedRegion(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 bg-white/50 px-3 py-2 text-sm transition-all duration-200 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm transition-all duration-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
           >
             <option value="all">전체 지역</option>
             {allRegions?.map((item) => (
@@ -84,7 +84,7 @@ export default function FilterPanel({
           <select
             value={selectedTimePeriod}
             onChange={(e) => setSelectedTimePeriod(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 bg-white/50 px-3 py-2 text-sm transition-all duration-200 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm transition-all duration-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
           >
             <option value="all">전체 시간대</option>
             {stats?.byTimePeriod?.map((item) => (

@@ -28,8 +28,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning={true}>
+    <html lang="en" className="overflow-x-hidden">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} overflow-x-hidden antialiased`}
+        suppressHydrationWarning={true}
+      >
         <Header />
         <MainWrapper>{children}</MainWrapper>
       </body>

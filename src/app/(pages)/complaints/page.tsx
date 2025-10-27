@@ -6,6 +6,7 @@ import { FilterPanelSkeleton, MapSkeleton, StatsPanelSkeleton } from '@/componen
 import ComplaintMapSection from '@/components/complaints/ComplaintMapSection'
 import ComplaintStatsPanel from '@/components/complaints/ComplaintStatsPanel'
 import FilterPanel from '@/components/complaints/FilterPanel'
+import MetricCards from '@/components/complaints/MetricCards'
 import { useComplaintData } from '@/hooks/useComplaintData'
 
 interface Complaint {
@@ -44,10 +45,13 @@ export default function ComplaintsPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-emerald-50/30 py-8">
       <div className="mx-auto max-w-7xl px-4">
         {/* Page Header */}
-        <div className="mb-8 text-center">
-          <h1 className="mb-2 text-3xl font-bold text-gray-900">민원 관리 시스템</h1>
+        <div className="mb-8">
+          <h1 className="mb-2 text-4xl font-bold text-gray-900">민원 관리 시스템</h1>
           <p className="text-gray-600">아산시 민원 발생 현황을 확인하고 분석하세요</p>
         </div>
+
+        {/* Key Metrics Cards */}
+        {!loading && <MetricCards stats={stats} dateRange={filters.dateRange} />}
 
         {/* Filter Panel */}
         {loading ? (

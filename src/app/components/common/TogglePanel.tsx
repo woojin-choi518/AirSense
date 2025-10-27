@@ -12,6 +12,7 @@ export default function TogglePanel({
   topOffset,
   bottomOffset,
   defaultOpen = false,
+  icon,
 }: {
   title: string
   children: React.ReactNode
@@ -20,15 +21,29 @@ export default function TogglePanel({
   topOffset?: number // px
   bottomOffset?: number // px
   defaultOpen?: boolean
+  icon?: React.ReactNode // 모바일에서 접혀있을 때 표시할 아이콘
 }) {
   const [open, setOpen] = React.useState(defaultOpen)
+  const [isMobile, setIsMobile] = React.useState(false)
+  const [isClient, setIsClient] = React.useState(false)
+
+  React.useEffect(() => {
+    setIsClient(true)
+    const checkMobile = () => setIsMobile(window.innerWidth < 640)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // 모바일에서 아이콘만 표시할 때 너비 조정
+  const shouldUseCompactWidth = icon && !open && isMobile && isClient
 
   return (
     <div
       className={cn(
         'fixed', // 모두 fixed
         horizontal, // left-4 or right-4
-        widthClass,
+        shouldUseCompactWidth ? 'max-w-[60px] min-w-[60px]' : widthClass,
         'z-[9999]',
         'max-h-[90vh]' // 모바일에서 패널 높이 제한
       )}
@@ -49,10 +64,17 @@ export default function TogglePanel({
             'bg-gradient-to-r from-teal-800/20 to-blue-500/20',
             'border-2 border-white/30 backdrop-blur-md',
             'flex items-center justify-between font-bold text-white',
-            'transition-[transform,opacity,box-shadow] duration-300'
+            'transition-[transform,opacity,box-shadow] duration-300',
+            // 모바일에서 아이콘만 표시할 때 패딩 조정
+            shouldUseCompactWidth ? 'px-3' : ''
           )}
         >
-          <span className="leading-none">{title}</span>
+          {/* 웹: 항상 title 표시, 모바일: 펼쳐져 있을 때만 title 표시 */}
+          <span className={cn('leading-none', icon && !open && isMobile && isClient && 'hidden')}>{title}</span>
+
+          {/* 모바일에서 접혀있을 때만 아이콘 표시 */}
+          {icon && !open && isMobile && isClient && <div className="flex items-center justify-center">{icon}</div>}
+
           <span className={cn('text-lg leading-none transition-transform', open && 'rotate-90')}>▸</span>
         </Collapsible.Trigger>
 
