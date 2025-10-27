@@ -15,5 +15,7 @@ export default function MainWrapper({ children }: { children: React.ReactNode })
   const shouldPad = !NO_PADDING_ROUTES.includes(pathname)
   const shouldBg = !NO_BG_ROUTES.includes(pathname)
 
-  return <main className={` ${shouldPad ? 'pt-16' : ''} ${shouldBg ? 'bg-green-100' : ''} `}>{children}</main>
+  return (
+    <main className={`overflow-x-hidden ${shouldPad ? 'pt-16' : ''} ${shouldBg ? 'bg-white' : ''}`}>{children}</main>
+  )
 }

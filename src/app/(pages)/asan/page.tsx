@@ -2,6 +2,7 @@
 
 import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api'
 import axios from 'axios'
+import { Beef, Thermometer } from 'lucide-react'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useMediaQuery } from 'react-responsive'
 
@@ -307,7 +308,8 @@ export default function FarmMapPage() {
       <TogglePanel
         title="축종 및 규모 필터"
         horizontal="left-4"
-        topOffset={64}
+        topOffset={70}
+        icon={<Beef className="h-6 w-6" />}
         widthClass="min-w-[140px] max-w-[40vw] sm:min-w-[200px] sm:max-w-[24vw] md:max-w-[20vw]"
       >
         <LivestockCombinedFilterPanel
@@ -352,7 +354,8 @@ export default function FarmMapPage() {
       <TogglePanel
         title="날씨 정보"
         horizontal="right-4"
-        topOffset={64}
+        topOffset={70}
+        icon={<Thermometer className="h-6 w-6" />}
         widthClass="min-w-[180px] max-w-[40vw] sm:min-w-[280px] sm:max-w-[26vw] md:max-w-[22vw]"
       >
         <WeatherPanel
