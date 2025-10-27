@@ -1,8 +1,7 @@
 'use client'
 
-import { Calendar, Clock, Filter, MapPin } from 'lucide-react'
-
-import Panel from '@/components/common/Panel'
+import { Calendar, ChevronDown, Clock, Filter, MapPin } from 'lucide-react'
+import { useState } from 'react'
 
 interface FilterPanelProps {
   dateRange: {
@@ -30,9 +29,25 @@ export default function FilterPanel({
   allRegions,
   stats,
 }: FilterPanelProps) {
+  const [isExpanded, setIsExpanded] = useState(true)
+
   return (
-    <Panel title="범위 설정" icon={Filter} variant="default">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex w-full items-center justify-between p-6 transition-colors hover:bg-gray-50"
+      >
+        <div className="flex items-center gap-2">
+          <Filter className="h-5 w-5 text-gray-600" />
+          <h2 className="text-lg font-semibold text-gray-900">범위 설정</h2>
+        </div>
+        <ChevronDown
+          className={`h-5 w-5 text-gray-500 transition-transform ${isExpanded ? '' : 'rotate-180'}`}
+        />
+      </button>
+      {isExpanded && (
+        <div className="border-t border-gray-200 p-6">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {/* 날짜 범위 */}
         <div>
           <label className="mb-2 block text-sm font-medium text-gray-700">
@@ -95,6 +110,8 @@ export default function FilterPanel({
           </select>
         </div>
       </div>
-    </Panel>
+    </div>
+    )}
+  </div>
   )
 }
