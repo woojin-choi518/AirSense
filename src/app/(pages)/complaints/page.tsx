@@ -45,7 +45,7 @@ export default function ComplaintsPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-emerald-50/30 py-8">
       <div className="mx-auto max-w-7xl px-4">
         {/* Page Header */}
-        <div className="mb-8">
+        <div className="center mb-8 rounded-xl border border-gray-200 bg-white p-6 text-center shadow-sm">
           <h1 className="mb-2 text-4xl font-bold text-gray-900">민원 관리 시스템</h1>
           <p className="text-gray-600">아산시 민원 발생 현황을 확인하고 분석하세요</p>
         </div>
@@ -71,9 +71,9 @@ export default function ComplaintsPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 lg:items-stretch">
           {/* Map Section */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 lg:h-full">
             {loading ? (
               <MapSkeleton />
             ) : (
@@ -88,7 +88,7 @@ export default function ComplaintsPage() {
           </div>
 
           {/* Statistics Section */}
-          <div className="space-y-6">
+          <div className="flex flex-col lg:h-full">
             {loading ? (
               <StatsPanelSkeleton />
             ) : (
@@ -98,13 +98,13 @@ export default function ComplaintsPage() {
                   regionChart: {
                     defaultView: 'chart',
                     showTrend: true,
-                    height: 256,
+                    height: 260,
                     maxItems: 5,
                   },
                   monthChart: {
                     defaultView: 'chart',
                     showTrend: true,
-                    height: 256,
+                    height: 260,
                   },
                   showTotal: true,
                 }}

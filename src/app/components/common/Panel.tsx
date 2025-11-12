@@ -32,13 +32,18 @@ export default function Panel({
   const variantStyle = variantStyles[variant]
   const textAlignStyle = textAlign === 'center' ? 'text-center' : textAlign === 'right' ? 'text-right' : 'text-left'
 
+  const isFlexColumn = className.includes('flex') && className.includes('flex-col')
+  const isFullHeight = className.includes('h-full') || className.includes('lg:h-full')
+
   return (
     <div className={`${baseStyles} ${variantStyle} ${className}`}>
       <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900">
         <Icon className="h-5 w-5 text-gray-600" />
         {title}
       </h2>
-      <div className={textAlignStyle}>{children}</div>
+      <div className={`${textAlignStyle} ${isFlexColumn && isFullHeight ? 'flex min-h-0 flex-1 flex-col' : ''}`}>
+        {children}
+      </div>
     </div>
   )
 }
