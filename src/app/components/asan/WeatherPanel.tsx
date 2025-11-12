@@ -4,6 +4,9 @@ import axios from 'axios'
 import { Cloud, CloudRain, Moon, Sun, Wind } from 'lucide-react'
 import React, { useEffect, useMemo, useState } from 'react'
 
+import { cn } from '@/app/lib/cn'
+import { useHighContrast } from '@/components/providers/HighContrastProvider'
+
 import { WeatherPanelSkeleton } from '../common/Skeleton'
 
 // 날씨 아이콘 컴포넌트
@@ -48,6 +51,7 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
   const [lastUpdated, setLastUpdated] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(false) // 초기값을 false로 변경
   const [error, setError] = useState<string | null>(null)
+  const { isHighContrast } = useHighContrast()
 
   const guidance = useMemo(() => {
     if (scWindSpeed <= 1.0) return '바람이 약해 악취가 넓게 퍼질 수 있습니다.'
@@ -157,8 +161,12 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
       {/* 슬라이더 */}
       {forecastList.length > 0 && (
         <div className="mb-4 space-y-2 sm:mb-6">
-          <div className="text-center text-xs font-semibold text-white sm:text-sm">
-            <span className="text-xs font-semibold text-white sm:text-sm">악취 범위 예측 슬라이더</span>
+          <div
+            className={cn('text-center text-xs font-semibold sm:text-sm', isHighContrast ? 'text-white' : 'text-white')}
+          >
+            <span className={cn('text-xs font-semibold sm:text-sm', isHighContrast ? 'text-white' : 'text-white')}>
+              악취 범위 예측 슬라이더
+            </span>
           </div>
           <input
             type="range"
@@ -167,9 +175,14 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
             step={1}
             value={selIndex}
             onChange={(e) => onSelIndexChange(+e.target.value)}
-            className="w-full accent-blue-200"
+            className={cn('w-full', isHighContrast ? 'accent-white' : 'accent-blue-200')}
           />
-          <div className="mt-2 grid grid-cols-5 text-center text-[10px] text-white/80 sm:text-xs">
+          <div
+            className={cn(
+              'mt-2 grid grid-cols-5 text-center text-[10px] sm:text-xs',
+              isHighContrast ? 'text-white' : 'text-white/80'
+            )}
+          >
             {tickLabels.map((label, idx) => (
               <span key={idx}>{label}</span>
             ))}
@@ -178,7 +191,12 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
       )}
 
       {/* 메인 날씨 위젯 */}
-      <div className="mb-4 rounded-2xl bg-gradient-to-br from-blue-300 p-3 text-white shadow-xl sm:p-6">
+      <div
+        className={cn(
+          'mb-4 rounded-2xl p-3 shadow-xl sm:p-6',
+          isHighContrast ? 'border border-white bg-gray-800 text-white' : 'bg-gradient-to-br from-blue-300 text-white'
+        )}
+      >
         {selIndex === 0 ? (
           <>
             {/* 현재 날씨 카드 */}
@@ -228,14 +246,28 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
       {/* 세부 정보 카드들 */}
       <div className="grid grid-cols-2 gap-2 sm:gap-3">
         {/* 습도 */}
-        <div className="flex min-h-[85px] flex-col justify-between rounded-xl bg-gradient-to-br p-2 text-white backdrop-blur-sm sm:min-h-[100px] sm:p-4">
-          <div className="text-xs opacity-80">습도</div>
+        <div
+          className={cn(
+            'flex min-h-[85px] flex-col justify-between rounded-xl p-2 sm:min-h-[100px] sm:p-4',
+            isHighContrast
+              ? 'border border-white bg-gray-800 text-white'
+              : 'bg-gradient-to-br text-white backdrop-blur-sm'
+          )}
+        >
+          <div className={cn('text-xs', isHighContrast ? 'text-white' : 'text-white opacity-80')}>습도</div>
           <div className="text-md font-bold sm:text-2xl">{selIndex === 0 ? H : selFc?.main?.humidity}%</div>
         </div>
 
         {/* 풍속 */}
-        <div className="flex min-h-[85px] flex-col justify-between rounded-xl bg-gradient-to-br p-2 text-white backdrop-blur-sm sm:min-h-[100px] sm:p-4">
-          <div className="text-xs opacity-80">풍속</div>
+        <div
+          className={cn(
+            'flex min-h-[85px] flex-col justify-between rounded-xl p-2 sm:min-h-[100px] sm:p-4',
+            isHighContrast
+              ? 'border border-white bg-gray-800 text-white'
+              : 'bg-gradient-to-br text-white backdrop-blur-sm'
+          )}
+        >
+          <div className={cn('text-xs', isHighContrast ? 'text-white' : 'text-white opacity-80')}>풍속</div>
           <div>
             <span className="text-md font-bold sm:text-2xl">
               {selIndex === 0 ? Wsp?.toFixed(1) : selFc?.wind?.speed?.toFixed(1) || 0}
@@ -245,11 +277,18 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
         </div>
 
         {/* 풍향 */}
-        <div className="flex min-h-[85px] flex-col justify-between rounded-xl bg-gradient-to-br p-2 text-white backdrop-blur-sm sm:min-h-[100px] sm:p-4">
-          <div className="text-xs opacity-80">풍향</div>
+        <div
+          className={cn(
+            'flex min-h-[85px] flex-col justify-between rounded-xl p-2 sm:min-h-[100px] sm:p-4',
+            isHighContrast
+              ? 'border border-white bg-gray-800 text-white'
+              : 'bg-gradient-to-br text-white backdrop-blur-sm'
+          )}
+        >
+          <div className={cn('text-xs', isHighContrast ? 'text-white' : 'text-white opacity-80')}>풍향</div>
           <div className="flex items-center gap-1">
             <Wind
-              className="h-5 w-5 flex-shrink-0 sm:h-7 sm:w-7"
+              className={cn('h-5 w-5 flex-shrink-0 sm:h-7 sm:w-7', isHighContrast ? 'text-white' : 'text-white')}
               style={{
                 transform: `rotate(${((selIndex === 0 ? Wdir : selFc?.wind?.deg) || 0) - 90}deg)`,
               }}
@@ -259,8 +298,15 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
         </div>
 
         {/* 강수량 */}
-        <div className="flex min-h-[85px] flex-col justify-between rounded-xl bg-gradient-to-br p-2 text-white backdrop-blur-sm sm:min-h-[100px] sm:p-4">
-          <div className="text-xs opacity-80">강수량</div>
+        <div
+          className={cn(
+            'flex min-h-[85px] flex-col justify-between rounded-xl p-2 sm:min-h-[100px] sm:p-4',
+            isHighContrast
+              ? 'border border-white bg-gray-800 text-white'
+              : 'bg-gradient-to-br text-white backdrop-blur-sm'
+          )}
+        >
+          <div className={cn('text-xs', isHighContrast ? 'text-white' : 'text-white opacity-80')}>강수량</div>
           <div>
             <span className="text-md font-bold sm:text-2xl">{selIndex === 0 ? rain : selFc?.rain?.['3h'] || 0}</span>
             <span className="text-[10px] sm:text-xs"> mm</span>
@@ -269,7 +315,14 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({
       </div>
 
       {/* 안내 문구 */}
-      <div className="mt-4 rounded-xl bg-gradient-to-br p-3 text-center text-xs font-semibold text-white backdrop-blur-sm sm:p-4 sm:text-sm">
+      <div
+        className={cn(
+          'mt-4 rounded-xl p-3 text-center text-xs font-semibold sm:p-4 sm:text-sm',
+          isHighContrast
+            ? 'border border-white bg-gray-800 text-white'
+            : 'bg-gradient-to-br text-white backdrop-blur-sm'
+        )}
+      >
         <p className="break-words">{guidance}</p>
       </div>
     </div>

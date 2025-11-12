@@ -3,6 +3,7 @@ import * as Collapsible from '@radix-ui/react-collapsible'
 import * as React from 'react'
 
 import { cn } from '@/app/lib/cn'
+import { useHighContrast } from '@/components/providers/HighContrastProvider'
 
 export default function TogglePanel({
   title,
@@ -37,6 +38,7 @@ export default function TogglePanel({
 
   // 모바일에서 아이콘만 표시할 때 너비 조정
   const shouldUseCompactWidth = icon && !open && isMobile && isClient
+  const { isHighContrast } = useHighContrast()
 
   return (
     <div
@@ -61,12 +63,14 @@ export default function TogglePanel({
             // 높이 고정 + 줄바꿈 방지 (두 패널 동일)
             'h-12 overflow-hidden px-5 text-ellipsis whitespace-nowrap',
             'w-full rounded-full shadow-md select-none',
-            'bg-gradient-to-r from-teal-800/20 to-blue-500/20',
-            'border-2 border-white/30 backdrop-blur-md',
-            'flex items-center justify-between font-bold text-white',
+            'flex items-center justify-between font-bold',
             'transition-[transform,opacity,box-shadow] duration-300',
             // 모바일에서 아이콘만 표시할 때 패딩 조정
-            shouldUseCompactWidth ? 'px-3' : ''
+            shouldUseCompactWidth ? 'px-3' : '',
+            // 고대비 모드 스타일
+            isHighContrast
+              ? 'border border-white bg-gray-800 text-white'
+              : 'border-2 border-white/30 bg-gradient-to-r from-teal-800/20 to-blue-500/20 text-white backdrop-blur-md'
           )}
         >
           {/* 웹: 항상 title 표시, 모바일: 펼쳐져 있을 때만 title 표시 */}
@@ -81,11 +85,14 @@ export default function TogglePanel({
         {/* 본문 */}
         <Collapsible.Content
           className={cn(
-            'mt-2 rounded-2xl border-2 border-white/30',
-            'bg-gradient-to-br from-teal-800/20 to-blue-500/20',
-            'shadow-lg backdrop-blur-md',
+            'mt-2 rounded-2xl',
+            'shadow-lg',
             'animate-in slide-in-from-top-2 fade-in duration-200',
-            'w-full overflow-hidden'
+            'w-full overflow-hidden',
+            // 고대비 모드 스타일
+            isHighContrast
+              ? 'border border-white bg-gray-800'
+              : 'border-2 border-white/30 bg-gradient-to-br from-teal-800/20 to-blue-500/20 backdrop-blur-md'
           )}
         >
           <div className="scrollbar-hide max-h-[calc(90vh-80px)] w-full overflow-y-auto p-1">{children}</div>

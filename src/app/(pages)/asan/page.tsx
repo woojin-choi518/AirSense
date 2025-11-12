@@ -12,6 +12,7 @@ import LivestockPieChartPanel from '@/components/asan/LivestockPieChartPanel'
 import OdorOverlay from '@/components/asan/OdorOverlay'
 import WeatherPanel from '@/components/asan/WeatherPanel'
 import TogglePanel from '@/components/common/TogglePanel'
+import HighContrastProvider from '@/components/providers/HighContrastProvider'
 import {
   API_VERSION,
   ASAN_CENTER,
@@ -45,7 +46,7 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue
 }
 
-export default function FarmMapPage() {
+function FarmMapContent() {
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' })
   useScrollLock(true)
 
@@ -446,5 +447,13 @@ export default function FarmMapPage() {
         <LivestockPieChartPanel farms={farms} />
       </TogglePanel>
     </div>
+  )
+}
+
+export default function FarmMapPage() {
+  return (
+    <HighContrastProvider>
+      <FarmMapContent />
+    </HighContrastProvider>
   )
 }

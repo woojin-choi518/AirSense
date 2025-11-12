@@ -7,7 +7,13 @@ import { groupSmallCategories } from '@/app/lib/groupSmallCategories'
 
 const COLORS = ['#524632', '#8f7e4f', '#c3c49e', '#d8ffdd', '#a1a488', '#565656']
 
-export default function LivestockPieChart({ data }: { data: { name: string; value: number }[] }) {
+export default function LivestockPieChart({
+  data,
+  isHighContrast = false,
+}: {
+  data: { name: string; value: number }[]
+  isHighContrast?: boolean
+}) {
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
@@ -34,8 +40,8 @@ export default function LivestockPieChart({ data }: { data: { name: string; valu
             innerRadius={30}
             fill="#8884d8"
             paddingAngle={5}
-            strokeWidth={1}
-            stroke="#ffffff"
+            strokeWidth={isHighContrast ? 3 : 1}
+            stroke={isHighContrast ? '#ffffff' : '#ffffff'}
             labelLine={false}
             label={(props: PieLabelRenderProps) => {
               type MyLabelProps = {
@@ -66,7 +72,7 @@ export default function LivestockPieChart({ data }: { data: { name: string; valu
                 <text
                   x={x}
                   y={y}
-                  fill="#ffffff"
+                  fill={isHighContrast ? '#ffffff' : '#ffffff'}
                   textAnchor="start"
                   dominantBaseline="hanging"
                   fontWeight="Bold"
@@ -87,11 +93,11 @@ export default function LivestockPieChart({ data }: { data: { name: string; valu
           </Pie>
           <Tooltip
             contentStyle={{
-              backgroundColor: 'rgba(241, 245, 253, 0.95)',
+              backgroundColor: isHighContrast ? '#1f2937' : 'rgba(241, 245, 253, 0.95)',
               borderRadius: '12px',
-              border: '1px solid rgba(255, 255, 255, 0.9)',
+              border: isHighContrast ? '3px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.9)',
             }}
-            itemStyle={{ color: '#333' }}
+            itemStyle={{ color: isHighContrast ? '#ffffff' : '#333' }}
             formatter={(value: number) => `${value} 농가`}
           />
           <Legend
@@ -103,6 +109,7 @@ export default function LivestockPieChart({ data }: { data: { name: string; valu
               fontWeight: 600,
               marginTop: 12,
               fontFamily: 'Pretendard', // 범례에도 Pretendard 적용
+              color: isHighContrast ? '#ffffff' : undefined,
             }}
           />
         </PieChart>
