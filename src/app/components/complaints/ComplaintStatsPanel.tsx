@@ -85,7 +85,7 @@ export default function ComplaintStatsPanel({ stats, config = {} }: ComplaintSta
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6 lg:h-full">
       {/* 지역별 통계 */}
       <StatSection
         title={regionConfig.title}

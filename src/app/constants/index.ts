@@ -1,5 +1,5 @@
 export const containerStyle = { width: '100%', height: '100%' }
-export const ASAN_CENTER = { lat: 36.7855, lng: 127.102 }
+export const ASAN_CENTER = { lat: 36.79, lng: 127.0 }
 export const DEFAULT_ZOOM = 13
 
 export const typeToGroup: Record<string, string> = {
