@@ -26,7 +26,7 @@ export default function HighContrastToggle({ className }: { className?: string }
         <Contrast className="h-4 w-4" />
         <span className="text-xs font-semibold">고대비</span>
       </div>
-      <span className={cn('text-xs font-semibold', isHighContrast ? 'text-gray-800' : 'text-gray-600')}>
+      <span className={cn('text-xs font-semibold', isHighContrast ? 'text-gray-800' : 'text-gray-600/80')}>
         {isHighContrast ? 'ON' : 'OFF'}
       </span>
     </button>
