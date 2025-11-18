@@ -1,24 +1,11 @@
 'use client'
 
-import { Calendar, TrendingUp } from 'lucide-react'
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  ComposedChart,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
+import { Bar, BarChart, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
 export interface ChartData {
   name: string
   value: number
-  [key: string]: any
+  [key: string]: string | number | undefined
 }
 
 export interface ChartConfig {
@@ -32,9 +19,9 @@ export interface ChartConfig {
   trendGradientColors?: string[]
   xAxisLabel?: string
   yAxisLabel?: string
-  formatXAxis?: (value: any) => string
-  formatTooltip?: (value: number, name: string) => [string, string]
-  formatLabel?: (label: string) => string
+  formatXAxis?: (value: string | number) => string
+  formatTooltip?: (_value: number, _name: string) => [string, string]
+  formatLabel?: (_label: string) => string
 }
 
 interface StatChartProps {
@@ -51,16 +38,14 @@ const gradients = {
   trend: ['#10b981', '#34d399', '#6ee7b7'],
 }
 
-export default function StatChart({ data, config, height = 256, showTrend = false }: StatChartProps) {
-  const chartHeight = height
-
+export default function StatChart({ data, config, showTrend = false }: StatChartProps) {
   // 커스텀 툴팁 컴포넌트
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) => {
     if (active && payload && payload.length) {
       return (
         <div className="rounded-xl border border-gray-200 bg-white/95 p-3 shadow-lg backdrop-blur-sm">
           <p className="mb-1 text-sm font-medium text-gray-800">
-            {config.formatLabel ? config.formatLabel(label) : `${config.xAxisLabel || '항목'}: ${label}`}
+            {config.formatLabel ? config.formatLabel(label || '') : `${config.xAxisLabel || '항목'}: ${label || ''}`}
           </p>
           <div className="flex items-center gap-2">
             <div className="h-3 w-3 rounded-full" style={{ backgroundColor: config.color }} />
@@ -77,8 +62,8 @@ export default function StatChart({ data, config, height = 256, showTrend = fals
   }
 
   // 커스텀 바 컴포넌트
-  const CustomBar = (props: any) => {
-    const { fill, payload, index, x, y, width, height, ...restProps } = props
+  const CustomBar = (props: { index?: number; x?: number; y?: number; width?: number; height?: number }) => {
+    const { index, x, y, width, height } = props
     const gradientId = `gradient-${index}`
     const gradientColors = config.gradientColors || gradients.region
 

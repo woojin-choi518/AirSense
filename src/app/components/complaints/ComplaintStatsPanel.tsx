@@ -64,7 +64,10 @@ export default function ComplaintStatsPanel({ stats, config = {} }: ComplaintSta
     trendColor: '#10b981',
     trendGradientColors: ['#d1fae5', '#a7f3d0', '#86efac'],
     xAxisLabel: '지역',
-    formatXAxis: (value: string) => (value.length > 6 ? value.substring(0, 6) + '...' : value),
+    formatXAxis: (value: string | number) => {
+      const str = String(value)
+      return str.length > 6 ? str.substring(0, 6) + '...' : str
+    },
     formatTooltip: (value: number) => [`${value}건`, '민원 수'],
     formatLabel: (label: string) => `지역: ${label}`,
   }
@@ -79,7 +82,7 @@ export default function ComplaintStatsPanel({ stats, config = {} }: ComplaintSta
     trendColor: '#10b981',
     trendGradientColors: ['#d1fae5', '#a7f3d0', '#86efac'],
     xAxisLabel: '월',
-    formatXAxis: (value: string) => `${value}월`,
+    formatXAxis: (value: string | number) => `${value}월`,
     formatTooltip: (value: number) => [`${value}건`, '민원 수'],
     formatLabel: (label: string) => `월: ${label}월`,
   }
