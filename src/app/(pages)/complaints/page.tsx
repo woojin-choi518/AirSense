@@ -71,7 +71,7 @@ export default function ComplaintsPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 lg:items-stretch">
+        <div className="grid grid-cols-1 gap-8 lg:h-[70vh] lg:grid-cols-3 lg:items-stretch">
           {/* Map Section */}
           <div className="lg:col-span-2 lg:h-full">
             {loading ? (
@@ -98,13 +98,13 @@ export default function ComplaintsPage() {
                   regionChart: {
                     defaultView: 'chart',
                     showTrend: true,
-                    height: 260,
+                    height: 400,
                     maxItems: 5,
                   },
                   monthChart: {
                     defaultView: 'chart',
                     showTrend: true,
-                    height: 260,
+                    height: 400,
                   },
                   showTotal: true,
                 }}

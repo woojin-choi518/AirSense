@@ -58,7 +58,7 @@ export default function ComplaintMapSection({
 
   return (
     <Panel title="민원 발생 위치" icon={MapPin} className="flex flex-col lg:h-full">
-      <div className="flex min-h-0 flex-1 flex-shrink">
+      <div className="flex min-h-0 flex-1 flex-shrink-0">
         <div className="h-[500px] w-full overflow-hidden rounded-lg shadow-lg lg:h-full">
           <GoogleMap mapContainerStyle={getMapContainerStyle()} center={ASAN_CENTER} zoom={12} options={mapOptions}>
             {clusteredMarkers.map((cluster, index) => (
@@ -82,14 +82,16 @@ export default function ComplaintMapSection({
       </div>
 
       {/* 민원 리스트 인라인 표시 */}
-      <div>
-        <ComplaintList
-          complaints={selectedClusterComplaints}
-          totalCount={selectedClusterComplaints.length}
-          onClose={onCloseComplaintList}
-          isVisible={showComplaintList}
-        />
-      </div>
+      {showComplaintList && (
+        <div className="mt-4 flex-shrink-0">
+          <ComplaintList
+            complaints={selectedClusterComplaints}
+            totalCount={selectedClusterComplaints.length}
+            onClose={onCloseComplaintList}
+            isVisible={showComplaintList}
+          />
+        </div>
+      )}
     </Panel>
   )
 }

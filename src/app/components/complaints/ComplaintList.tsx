@@ -182,7 +182,7 @@ export default function ComplaintList({ complaints, totalCount, onClose, isVisib
         </div>
 
         {/* Content */}
-        <div className="max-h-96 space-y-4 overflow-y-auto">
+        <div className="max-h-64 space-y-4 overflow-y-auto">
           {loading
             ? // 로딩 시 스켈레톤 아이템들 표시
               Array.from({ length: 5 }, (_, index) => (

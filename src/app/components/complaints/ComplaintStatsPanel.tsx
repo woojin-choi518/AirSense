@@ -34,8 +34,8 @@ interface ComplaintStatsPanelProps {
 export default function ComplaintStatsPanel({ stats, config = {} }: ComplaintStatsPanelProps) {
   if (!stats) {
     return (
-      <div className="space-y-6">
-        <div className="rounded-xl border border-gray-100 bg-gray-50 p-6 shadow-sm">
+      <div className="space-y-2">
+        <div className="rounded-xl border border-gray-100 bg-gray-50 p-2 shadow-sm">
           <div className="text-gray-400">데이터를 불러오는 중...</div>
         </div>
       </div>
@@ -85,28 +85,32 @@ export default function ComplaintStatsPanel({ stats, config = {} }: ComplaintSta
   }
 
   return (
-    <div className="flex flex-col gap-6 lg:h-full">
+    <div className="flex min-h-0 flex-1 flex-col gap-6 lg:h-full">
       {/* 지역별 통계 */}
-      <StatSection
-        title={regionConfig.title}
-        icon={regionConfig.icon}
-        data={regionData}
-        config={regionConfig}
-        defaultView={config.regionChart?.defaultView || 'chart'}
-        showTrend={config.regionChart?.showTrend || true}
-        height={config.regionChart?.height || 256}
-      />
+      <div className="min-h-0 flex-1">
+        <StatSection
+          title={regionConfig.title}
+          icon={regionConfig.icon}
+          data={regionData}
+          config={regionConfig}
+          defaultView={config.regionChart?.defaultView || 'chart'}
+          showTrend={config.regionChart?.showTrend || true}
+          height={config.regionChart?.height || 300}
+        />
+      </div>
 
       {/* 월별 통계 */}
-      <StatSection
-        title={monthConfig.title}
-        icon={monthConfig.icon}
-        data={monthData}
-        config={monthConfig}
-        defaultView={config.monthChart?.defaultView || 'chart'}
-        showTrend={config.monthChart?.showTrend || true}
-        height={config.monthChart?.height || 256}
-      />
+      <div className="min-h-0 flex-1">
+        <StatSection
+          title={monthConfig.title}
+          icon={monthConfig.icon}
+          data={monthData}
+          config={monthConfig}
+          defaultView={config.monthChart?.defaultView || 'chart'}
+          showTrend={config.monthChart?.showTrend || true}
+          height={config.monthChart?.height || 300}
+        />
+      </div>
     </div>
   )
 }

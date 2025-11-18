@@ -27,7 +27,7 @@ export default function StatSection({
   const [viewMode, setViewMode] = useState<'chart' | 'list'>(defaultView)
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md">
+    <div className="flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md">
       <div className="mb-6 flex items-center justify-between">
         <h3 className="flex items-center gap-3 text-lg font-semibold text-gray-900">
           <div className="rounded-lg bg-gray-50 p-2">{icon}</div>
@@ -52,11 +52,11 @@ export default function StatSection({
       </div>
 
       {viewMode === 'chart' ? (
-        <div className="rounded-xl border border-gray-100 bg-gray-50/50 p-4">
+        <div className="min-h-0 flex-1 rounded-xl border border-gray-100 bg-gray-50/50">
           <StatChart data={data} config={config} height={height} showTrend={showTrend} />
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="min-h-0 flex-1 space-y-2 overflow-y-auto">
           {data.map((item, index) => (
             <div
               key={item.name || index}

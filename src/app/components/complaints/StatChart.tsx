@@ -96,7 +96,7 @@ export default function StatChart({ data, config, height = 256, showTrend = fals
     return (
       <g>
         <defs>
-          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor={gradientColors[0]} />
             <stop offset="50%" stopColor={gradientColors[1]} />
             <stop offset="100%" stopColor={gradientColors[2]} />
@@ -108,31 +108,30 @@ export default function StatChart({ data, config, height = 256, showTrend = fals
   }
 
   return (
-    <div className="h-64">
+    <div className="h-full">
       <ResponsiveContainer width="100%" height="100%">
         {showTrend || config.showTrend ? (
-          <ComposedChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+          <ComposedChart data={data} layout="vertical" margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
             <defs>
-              <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="trendGradient" x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0%" stopColor="#10b981" />
                 <stop offset="50%" stopColor="#34d399" />
                 <stop offset="100%" stopColor="#6ee7b7" />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" strokeOpacity={0.3} />
-            <XAxis
+            <XAxis type="number" tick={{ fill: '#6b7280' }} axisLine={{ stroke: '#e5e7eb' }} />
+            <YAxis
+              type="category"
               dataKey="name"
-              angle={config.title.includes('지역') ? -45 : 0}
-              textAnchor={config.title.includes('지역') ? 'end' : 'middle'}
-              height={config.title.includes('지역') ? 80 : 40}
+              width={config.title.includes('지역') ? 100 : 60}
               fontSize={12}
               tickFormatter={config.formatXAxis}
               tick={{ fill: '#6b7280' }}
               axisLine={{ stroke: '#e5e7eb' }}
             />
-            <YAxis tick={{ fill: '#6b7280' }} axisLine={{ stroke: '#e5e7eb' }} />
             <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey={config.dataKey} shape={<CustomBar />} radius={[4, 4, 0, 0]} />
+            <Bar dataKey={config.dataKey} shape={<CustomBar />} radius={[0, 4, 4, 0]} />
             <Line
               type="monotone"
               dataKey={config.dataKey}
@@ -153,21 +152,20 @@ export default function StatChart({ data, config, height = 256, showTrend = fals
             />
           </ComposedChart>
         ) : (
-          <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+          <BarChart data={data} layout="vertical" margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" strokeOpacity={0.3} />
-            <XAxis
+            <XAxis type="number" tick={{ fill: '#6b7280' }} axisLine={{ stroke: '#e5e7eb' }} />
+            <YAxis
+              type="category"
               dataKey="name"
-              angle={config.title.includes('지역') ? -45 : 0}
-              textAnchor={config.title.includes('지역') ? 'end' : 'middle'}
-              height={config.title.includes('지역') ? 80 : 40}
+              width={config.title.includes('지역') ? 100 : 60}
               fontSize={12}
               tickFormatter={config.formatXAxis}
               tick={{ fill: '#6b7280' }}
               axisLine={{ stroke: '#e5e7eb' }}
             />
-            <YAxis tick={{ fill: '#6b7280' }} axisLine={{ stroke: '#e5e7eb' }} />
             <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey={config.dataKey} shape={<CustomBar />} radius={[4, 4, 0, 0]} />
+            <Bar dataKey={config.dataKey} shape={<CustomBar />} radius={[0, 4, 4, 0]} />
           </BarChart>
         )}
       </ResponsiveContainer>
