@@ -1,7 +1,7 @@
 'use client'
 
 import { BarChart3, List } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import StatChart, { ChartConfig, ChartData } from './StatChart'
 
@@ -25,6 +25,11 @@ export default function StatSection({
   height = 256,
 }: StatSectionProps) {
   const [viewMode, setViewMode] = useState<'chart' | 'list'>(defaultView)
+
+  // defaultView prop이 변경되면 상태 동기화
+  useEffect(() => {
+    setViewMode(defaultView)
+  }, [defaultView])
 
   return (
     <div className="flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md">
@@ -52,7 +57,10 @@ export default function StatSection({
       </div>
 
       {viewMode === 'chart' ? (
-        <div className="min-h-0 flex-1 rounded-xl border border-gray-100 bg-gray-50/50">
+        <div
+          className="min-h-0 flex-1 rounded-xl border border-gray-100 bg-gray-50/50"
+          style={{ minHeight: `${height}px` }}
+        >
           <StatChart data={data} config={config} height={height} showTrend={showTrend} />
         </div>
       ) : (

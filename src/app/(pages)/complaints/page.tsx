@@ -71,7 +71,7 @@ export default function ComplaintsPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-8 lg:h-[70vh] lg:grid-cols-3 lg:items-stretch">
+        <div className="grid min-h-[800px] grid-cols-1 gap-8 lg:min-h-[900px] lg:grid-cols-3 lg:items-stretch">
           {/* Map Section */}
           <div className="lg:col-span-2 lg:h-full">
             {loading ? (
